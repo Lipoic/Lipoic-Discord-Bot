@@ -1,5 +1,3 @@
-
-
 import logging
 import datetime
 import os
@@ -30,16 +28,16 @@ class Client(commands.Bot):
         ] if strOwners is not None else []
 
         # 需要加載的cog資料夾名
-        self.__cogs_file: List[str] = []
+        self.__cogs_file: List[str] = ["__init__"]
         # 開機時間
         self.start_time = datetime.datetime.utcnow()
         # 日誌
         self.log = log or logging.getLogger()
         # 權限意圖
-        self.Intents = intents or discord.Intents()
+        self.Intents = discord.Intents.all()
 
         super().__init__(
-            command_prefix="test",
+            command_prefix="!",
             case_insensitive=True,
             owner_ids=self.owners, intents=self.Intents,
             allowed_mentions=discord.AllowedMentions(
