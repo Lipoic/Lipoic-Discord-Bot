@@ -9,18 +9,30 @@ from typing import List, Optional
 
 import discord
 import pkg_resources
-from discord.ext import commands
+from discord import app_commands
 from dotenv import load_dotenv
 
 
-class Client(commands.Bot):
+class Client(discord.Client):
+    MY_GUILD = discord.Object(id=0)
+
     def __init__(
         self, *,
+        application_id: int,
         log: Optional[logging.Logger] = None,
         intents: Optional[discord.Intents] = None
     ):
         """setup"""
         load_dotenv(dotenv_path=Path(os.path.abspath(".")+"\\.env"))
+
+        super().__init__(
+            application_id=application_id,
+            case_insensitive=True,
+            owner_ids=self.owners, intents=self.Intents,
+            allowed_mentions=discord.AllowedMentions(
+                roles=False, users=True, everyone=False
+            ),
+        )
 
         strOwners = os.getenv("owners", None)
 
@@ -30,7 +42,7 @@ class Client(commands.Bot):
         ] if strOwners is not None else []
 
         # 需要加載的cog資料夾名
-        self.__cogs_file: List[str] = []
+        self.__cogs_file: List[str] = ["__init__"]
         # 開機時間
         self.start_time = datetime.datetime.utcnow()
         # 日誌
@@ -38,29 +50,11 @@ class Client(commands.Bot):
         # 權限意圖
         self.Intents = intents or discord.Intents()
 
-        super().__init__(
-            command_prefix="test",
-            case_insensitive=True,
-            owner_ids=self.owners, intents=self.Intents,
-            allowed_mentions=discord.AllowedMentions(
-                roles=False, users=True, everyone=False
-            )
-        )
+        self.tree = app_commands.CommandTree(self)
 
-    def load(self):
-        for file in self.__cogs_file:
-            try:
-                self.load_extension(f"cogs.commands.{file}")
-            except Exception as error:
-                self.log.error(f"錯誤: {error}")
-            else:
-                self.log.info(f"加載 cogs.commands.{file} 完成!")
-        try:
-            self.load_extension("cogs.events.__init__")
-        except Exception as error:
-            self.log.error(f"加載 cogs.events 錯誤: {error}!")
-        else:
-            self.log.info("加載 cogs.events 完成!")
+    async def setup_hook(self):
+        self.tree.copy_global_to(guild=self.MY_GUILD)
+        await self.tree.sync(guild=self.MY_GUILD)
 
     def run(
         self,
@@ -79,5 +73,4 @@ class Client(commands.Bot):
     # event
     async def on_ready(self):
         """執行始初化/BOT開機呼叫"""
-        self.load()
         print(self.user)
