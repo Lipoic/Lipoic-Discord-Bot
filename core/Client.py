@@ -1,5 +1,3 @@
-
-
 import logging
 import datetime
 import os
@@ -48,7 +46,7 @@ class Client(discord.Client):
         # 日誌
         self.log = log or logging.getLogger()
         # 權限意圖
-        self.Intents = intents or discord.Intents()
+        self.Intents = discord.Intents.all()
 
         self.tree = app_commands.CommandTree(self)
 
@@ -73,4 +71,5 @@ class Client(discord.Client):
     # event
     async def on_ready(self):
         """執行始初化/BOT開機呼叫"""
+        print(self.user)
         print(self.user)
