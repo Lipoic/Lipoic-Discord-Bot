@@ -10,7 +10,8 @@ async def on_ready():
   print("Log in as " + str(bot.user))
 
 for cog in [
-  "hello"
+  "hello",
+  "clear"
   ]:
   bot.load_extension(cog)
 
