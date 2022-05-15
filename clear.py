@@ -11,10 +11,7 @@ class ClearCog(commands.Cog):
     async def delete(self, ctx: discord.ApplicationContext,
     message_id: discord.Option(str, "輸入要刪除的訊息ID"),
     reason: discord.Option(str, "Reason", default= "無原因")):
-        # message: discord.Message= self.bot.get_message(int(message_id))
         message: discord.Message= await ctx.fetch_message(str(message_id))
-        # print(message, message_id)
-        # await message.reply("hi", ephemeral=True)
         await message.delete(reason=reason)
 
         embed=discord.Embed(title= "訊息刪除成功!", description= f"原因: {reason}")
