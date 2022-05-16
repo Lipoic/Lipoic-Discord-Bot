@@ -29,7 +29,8 @@ class ClearCog(commands.Cog):
         def del_check(message: discord.Message):
             return message.author == member or member == None
         del_message = await ctx.channel.purge(limit=count, check=del_check)
-        await ctx.respond(f"我成功刪除了`{len(del_message)}`則訊息!", ephemeral=True)
+        embed=discord.Embed(title=f"我成功刪除了`{len(del_message)}`則訊息!", description=f"原因: {reason}")
+        await ctx.respond(embed=embed, ephemeral=True)
     @purge.error
     async def purge_error(self, ctx: discord.ApplicationContext, error):
         embed=discord.Embed(title="訊息刪除失敗!", description= f"error:```{error}```", color=0xe74c3c)
