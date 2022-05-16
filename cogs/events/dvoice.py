@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
 
-class DvoiceCog(commands.Cog):
+class DynamicVoiceCog(commands.Cog):
     def __init__(self, bot) -> None:
         self.bot = bot
     
@@ -17,4 +17,4 @@ class DvoiceCog(commands.Cog):
             await before.channel.delete()
 
 def setup(bot):
-    bot.add_cog(DvoiceCog(bot))
+    bot.add_cog(DynamicVoiceCog(bot))
