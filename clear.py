@@ -27,7 +27,7 @@ class ClearCog(commands.Cog):
                     reason: discord.Option(str, "Reason", default="無原因"),
                     member: discord.Option(discord.Member, "要刪除的成員訊息", default=None)):
         def del_check(message: discord.Message):
-            return message.author == member or member == None
+            return message.author == member or member is None
         del_message = await ctx.channel.purge(limit=count, check=del_check)
         embed=discord.Embed(title=f"我成功刪除了`{len(del_message)}`則訊息!", description=f"原因: {reason}")
         await ctx.respond(embed=embed, ephemeral=True)
