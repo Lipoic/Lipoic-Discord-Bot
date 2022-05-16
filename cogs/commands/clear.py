@@ -13,7 +13,7 @@ class ClearCog(commands.Cog):
                      ctx: ApplicationContext,
                      message_id: Option(str, "輸入要刪除的訊息ID"),
                      reason: Option(str, "Reason", default="無原因")):
-        message: discord.Message = await ctx.fetch_message(str(message_id))
+        message: discord.Message = await ctx.fetch_message(int(message_id))
         await message.delete(reason=reason)
         embed = Embed(title="訊息刪除成功!", description=f"原因: {reason}")
         embed.set_author(name=message.author, icon_url=message.author.avatar.url)
@@ -29,7 +29,7 @@ class ClearCog(commands.Cog):
     @discord.slash_command(description="Delete Many Messages", guild_only=True)
     async def purge(self, 
                     ctx: ApplicationContext,
-                    count: Option(int, "輸入要刪除的訊息數量", min_value=1, max_value=2147483647),
+                    count: Option(int, "輸入要刪除的訊息數量", min_value=1, max_value=512),
                     reason: Option(str, "Reason", default="無原因"),
                     member: Option(discord.Member, "要刪除的成員訊息", default=None)):
         def del_check(message: discord.Message):
