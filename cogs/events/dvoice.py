@@ -2,7 +2,7 @@ import discord
 from discord.ext import commands
 
 class DvoiceCog(commands.Cog):
-    def __init__(bot) -> None:
+    def __init__(self, bot) -> None:
         self.bot = bot
     
     @commands.Cog.listener()
