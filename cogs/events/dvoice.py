@@ -11,7 +11,8 @@ class DynamicVoiceCog(commands.Cog):
                                     before: discord.VoiceState, 
                                     after: discord.VoiceState):
         if after.channel.id == 942291362861170699: #! For Test
-            await after.channel.category.create_voice_channel(name=member)
+            channel = await after.channel.category.create_voice_channel(name=member)
+            await member.move_to(channel)
         
         if not before.channel.members:
             await before.channel.delete()
