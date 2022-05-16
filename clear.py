@@ -23,9 +23,9 @@ class ClearCog(commands.Cog):
     @commands.has_permissions(manage_messages=True)
     @discord.slash_command(description="Delete Many Messages", guild_only=True)
     async def purge(self, ctx: discord.ApplicationContext,
-    count: discord.Option(int, "輸入要刪除的訊息數量", min_value=1, max_value=2147483647),
-    reason: discord.Option(str, "Reason", default="無原因"),
-    member: discord.Option(discord.Member, "要刪除的成員訊息", default=None)):
+                    count: discord.Option(int, "輸入要刪除的訊息數量", min_value=1, max_value=2147483647),
+                    reason: discord.Option(str, "Reason", default="無原因"),
+                    member: discord.Option(discord.Member, "要刪除的成員訊息", default=None)):
         def del_check(message: discord.Message):
             return message.author == member or member == None
         del_message = await ctx.channel.purge(limit=count, check=del_check)
