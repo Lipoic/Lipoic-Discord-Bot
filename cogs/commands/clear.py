@@ -13,7 +13,7 @@ class ClearCog(commands.Cog):
                      ctx: ApplicationContext,
                      message_id: Option(str, "輸入要刪除的訊息ID"),
                      reason: Option(str, "Reason", default="無原因")):
-        message: discord.Message = await ctx.fetch_message(str(message_id))
+        message: discord.Message = await ctx.fetch_message(message_id)
         await message.delete(reason=reason)
         embed = Embed(title="訊息刪除成功!", description=f"原因: {reason}")
         embed.set_author(name=message.author, icon_url=message.author.avatar.url)
