@@ -6,7 +6,7 @@ class DynamicVoiceCog(commands.Cog):
         self.bot = bot
     
     @commands.Cog.listener()
-    async def on_voice_stats_update(self, 
+    async def on_voice_state_update(self, 
                                     member: discord.Member, 
                                     before: discord.VoiceState, 
                                     after: discord.VoiceState):
