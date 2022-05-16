@@ -8,8 +8,8 @@ class ClearCog(commands.Cog):
     @commands.has_permissions(manage_messages=True)
     @discord.slash_command(description="Delete Message", guild_only=True)
     async def delete(self, ctx: discord.ApplicationContext,
-                    message_id: discord.Option(str, "輸入要刪除的訊息ID"),
-                    reason: discord.Option(str, "Reason", default="無原因")):
+                     message_id: discord.Option(str, "輸入要刪除的訊息ID"),
+                     reason: discord.Option(str, "Reason", default="無原因")):
         message: discord.Message = await ctx.fetch_message(str(message_id))
         await message.delete(reason=reason)
         embed=discord.Embed(title="訊息刪除成功!", description=f"原因: {reason}")
