@@ -1,4 +1,3 @@
-from email.policy import default
 import discord
 from discord.ext import commands
 

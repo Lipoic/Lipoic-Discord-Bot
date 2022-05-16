@@ -1,4 +1,5 @@
-import discord , tokens
+import discord
+import tokens
 
 # prefix: str = "!"
 # intents = discord.Intents.default()
