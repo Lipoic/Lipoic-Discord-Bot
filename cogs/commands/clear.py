@@ -1,6 +1,6 @@
 import discord
 from discord.ext import commands
-from discord import Embed, ApplicationContext
+from discord import Embed, ApplicationContext, Option
 
 
 class ClearCog(commands.Cog):
@@ -11,8 +11,8 @@ class ClearCog(commands.Cog):
     @discord.slash_command(description="Delete Message", guild_only=True)
     async def delete(self,
                      ctx: ApplicationContext,
-                     message_id: discord.Option(str, "輸入要刪除的訊息ID"),
-                     reason: discord.Option(str, "Reason", default="無原因")):
+                     message_id: Option(str, "輸入要刪除的訊息ID"),
+                     reason: Option(str, "Reason", default="無原因")):
         message: discord.Message = await ctx.fetch_message(str(message_id))
         await message.delete(reason=reason)
         embed = Embed(title="訊息刪除成功!", description=f"原因: {reason}")
@@ -29,9 +29,9 @@ class ClearCog(commands.Cog):
     @discord.slash_command(description="Delete Many Messages", guild_only=True)
     async def purge(self, 
                     ctx: ApplicationContext,
-                    count: discord.Option(int, "輸入要刪除的訊息數量", min_value=1, max_value=2147483647),
-                    reason: discord.Option(str, "Reason", default="無原因"),
-                    member: discord.Option(discord.Member, "要刪除的成員訊息", default=None)):
+                    count: Option(int, "輸入要刪除的訊息數量", min_value=1, max_value=2147483647),
+                    reason: Option(str, "Reason", default="無原因"),
+                    member: Option(discord.Member, "要刪除的成員訊息", default=None)):
         def del_check(message: discord.Message):
             return message.author == member or member is None
         del_message = await ctx.channel.purge(limit=count, check=del_check)
