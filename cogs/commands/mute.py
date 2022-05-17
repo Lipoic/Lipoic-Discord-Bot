@@ -7,6 +7,7 @@ from datetime import timedelta
 class MuteCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        print("load")
 
     @commands.has_permissions(mute_members=True)
     @discord.slash_command(description="Mute Member", guild_only=True)
@@ -21,7 +22,13 @@ class MuteCog(commands.Cog):
                      week: Option(int, "禁言的週數", min_value=0, max_value=52, default=0)):
         duration = timedelta(seconds=second, minutes=minute, hours=hour, days=day, weeks=week)
         await member.timeout_for(duration=duration, reason=reason)
-        embed = Embed(title="禁言成功!", description=f"原因: {reason}")
+        time = ""
+        if week >= 1: time += f"{week}週 "
+        if day >= 1: time += f"{day}天 "
+        if hour >= 1: time += f"{hour}小時 "
+        if minute >= 1: time += f"{minute}分鐘 "
+        if second >= 1: time += f"{second}秒 "
+        embed = Embed(title="禁言成功!", description=f"原因: {reason}\n持續時間: {time}")
         await ctx.respond(embed=embed, ephemeral=True)
     @mute.error
     async def delete_error(self, ctx: ApplicationContext, error):
