@@ -10,10 +10,11 @@ bot: discord.Bot = discord.Bot()
 async def on_ready():
     print("Log in as " + str(bot.user))
     for file in ["hello", #! Commands
-                 "clear"]:
+                 "clear",
+                 "mute"]:
         bot.load_extension(f"cogs.commands.{file}")
-    for file in ["dvoice"]: #! Events
-        bot.load_extension(f"cogs.events.{file}")
+    # for file in ["dvoice"]: #! Events
+    #     bot.load_extension(f"cogs.events.{file}")
 
-
-bot.run(tokens.bot)
+if __name__ == "__main__":
+    bot.run(tokens.bot)
