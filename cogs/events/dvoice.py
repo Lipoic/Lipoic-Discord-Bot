@@ -19,9 +19,11 @@ class DynamicVoiceCog(commands.Cog):
                 dvc = await after.channel.category.create_voice_channel(name=f"{member.display_name}的頻道")
                 self.dvc_dict[str(member.id)] = dvc
             await member.move_to(dvc)
-        if before.channel and not before.channel.members and before.channel in list(self.dvc_dict.values()):
+        if (before.channel and # if before channel != None
+            not before.channel.members and # if before channel's members == None
+            before.channel in list(self.dvc_dict.values())): # if before channel in dvc temp dict
             await before.channel.delete()
-            for i in self.dvc_dict:
+            for i in self.dvc_dict: # delete before channel in dvc temp dict
                 if self.dvc_dict[i] == before.channel:
                     del self.dvc_dict[i]
                     break
