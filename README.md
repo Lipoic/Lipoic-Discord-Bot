@@ -2,8 +2,28 @@
 
 the bot of Lipoic official discord server
 
+# setup
+
 ```sh
-python -m venv env
-env\Scripts\activate
-pip install py-cord==2.0.0b7
+pip install pipenv
+pipenv install # or $ pipenv install --dev
+pipenv shell
+```
+
+# run
+
+## pipenv
+
+```sh
+python main.py
+```
+
+## docker
+
+```sh
+# build
+pipenv lock -r > requirements.txt
+docker build -t lipoic-bot . --no-cache
+# run
+docker run -d lipoic-bot
 ```
