@@ -8,7 +8,7 @@ if TYPE_CHECKING:
     from core import LIPOIC
 
 
-class DynamicVoiceCog(commands.Cog):
+class DynamicVoiceCog(discord.Cog):
     def __init__(self, bot: 'LIPOIC') -> None:
         self.bot = bot
         self.dvc_dict = {}

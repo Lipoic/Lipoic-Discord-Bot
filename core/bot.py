@@ -113,8 +113,8 @@ class LIPOIC(discord.Bot):
         """
         return user.id in self.owner_ids
 
-    def add_cog(self, cog: commands.Cog, /, *, override=False):
-        if not isinstance(cog, commands.Cog):
+    def add_cog(self, cog: discord.Cog, /, *, override=False):
+        if not isinstance(cog, discord.Cog):
             raise RuntimeError(
                 f"The {cog.__class__.__name__} class is not a cog.",
                 f"class in the {cog.__module__}"

@@ -1,7 +1,7 @@
 from playhouse.sqlite_ext import SqliteDatabase, Model
 
 
-DATABASE = SqliteDatabase("data.db", pragmas={
+DATABASE = SqliteDatabase("data/data.db", pragmas={
     'journal_mode': 'wal',
     'cache_size': -1 * 64000,  # 64MB
     'foreign_keys': 1,
