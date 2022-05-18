@@ -1,5 +1,7 @@
 from playhouse.sqlite_ext import SqliteDatabase, Model
+import pathlib
 
+pathlib.Path("data").mkdir(parents=True, exist_ok=True)
 
 DATABASE = SqliteDatabase("data/data.db", pragmas={
     'journal_mode': 'wal',
