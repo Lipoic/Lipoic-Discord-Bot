@@ -1,13 +1,19 @@
-__version__ = "0.0.1"
+import discord
+import tokens
 
-if __name__ == "__main__":
-    from core import LIPOIC, logging
-    import dotenv
-    import os
+# prefix: str = "!"
+# intents = discord.Intents.default()
 
-    logging.init_logging(level="INFO")
+bot: discord.Bot = discord.Bot()
 
-    dotenv.load_dotenv()
+@bot.event
+async def on_ready():
+    print("Log in as " + str(bot.user))
+    for file in ["hello", #! Commands
+                 "clear"]:
+        bot.load_extension(f"cogs.commands.{file}")
+    for file in ["dvoice"]: #! Events
+        bot.load_extension(f"cogs.events.{file}")
 
-    bot = LIPOIC()
-    bot.run(os.getenv("DISCORD_TOKEN"))
+
+bot.run(tokens.bot)
