@@ -17,7 +17,7 @@ class MuteCog(discord.Cog):
         member: Option(discord.Member, "輸入要禁言的成員(預設時間1分鐘)"),
         reason: Option(str, "Reason", default="無原因"),
         second: Option(int, "禁言的秒數", min_value=0, max_value=59, default=0),
-        minute: Option(int, "禁言的分鐘數", min_value=0, max_value=59, default=1),
+        minute: Option(int, "禁言的分鐘數", min_value=0, max_value=59, default=0),
         hour: Option(int, "禁言的小時數", min_value=0, max_value=23, default=0),
         day: Option(int, "禁言的天數", min_value=0, max_value=6, default=0),
         week: Option(int, "禁言的週數", min_value=0, max_value=52, default=0)
@@ -26,6 +26,9 @@ class MuteCog(discord.Cog):
             seconds=second, minutes=minute,
             hours=hour, days=day, weeks=week
         )
+        if not duration:
+            minute = 1
+            duration = datetime.timedelta(minutes=1)
         await member.timeout_for(duration=duration, reason=reason)
         time_message: List[str] = []
         if week:
