@@ -27,8 +27,3 @@ class DevMemberType(TypedDict):
     name: Optional[str]
     position: List[str]
     github_name: Optional[str]
-
-
-def initialize() -> DevMemberModel:
-    DevMemberModel.create_table(True)
-    return DevMemberModel

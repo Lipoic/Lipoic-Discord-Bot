@@ -1,8 +1,7 @@
-from ast import Dict
 
-from .models import DATABASE, initializeModels
+from .models import DATABASE, getModels
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Dict
 
 if TYPE_CHECKING:
     from . import LIPOIC
@@ -10,21 +9,20 @@ if TYPE_CHECKING:
 
 
 class DB:
-    DevMemberModel: 'DevMemberModel'
-    DvcModel: 'DvcModel'
+    DevMember: 'DevMemberModel'
+    Dvc: 'DvcModel'
 
     def __init__(self, bot: 'LIPOIC'):
         self.bot = bot
         self.database = DATABASE
-        self._models: Dict[str, 'BaseModel'] = dict()
+        self._models: Dict[str, 'BaseModel'] = getModels()
 
-        self.loadModels()
+        self.create_tables()
 
     def connect(self):
         self.database.connect()
         return self
 
-    def loadModels(self):
-        self._models = models = initializeModels()
-        for [name, model] in dict.items(models):
-            setattr(self, name, model)
+    def create_tables(self):
+        with self.database:
+            self.database.create_tables(dict.values(self._models))

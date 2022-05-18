@@ -3,22 +3,19 @@ from typing import Dict, List
 from .base_model import BaseModel, DATABASE
 
 # Models
-from .member import DevMemberType, DevMemberModel, initialize as initializeDevMemberModel
-from .dvc import DvcType, DvcModel, initialize as initializeDvcModel
+from .member import DevMemberType, DevMemberModel
+from .dvc import DvcType, DvcModel
 
 
-def initializeModels():
-    DATABASE.connect()
-
-    # init models
-    modelsDict: Dict[str, BaseModel] = {}
+def getModels() -> Dict[str, BaseModel]:
     modelsList: List[BaseModel] = [
-        initializeDevMemberModel(),
-        initializeDvcModel(),
+        DevMemberModel,
+        DvcModel,
     ]
+
+    modelsDict: Dict[str, BaseModel] = dict()
+
     for modelClass in modelsList:
         modelsDict[modelClass.__name__] = modelClass
-
-    DATABASE.close()
 
     return modelsDict

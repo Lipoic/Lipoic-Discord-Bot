@@ -10,13 +10,10 @@ class DvcModel(BaseModel):
 
     # channel
     channel_id = IntegerField(null=True, unique=True)
+    # user id
+    user_id = IntegerField(null=True)
 
 
 class DvcType(TypedDict):
     """dvc channel type"""
     channel_id: str
-
-
-def initialize() -> DvcModel:
-    DvcModel.create_table(True)
-    return DvcModel
