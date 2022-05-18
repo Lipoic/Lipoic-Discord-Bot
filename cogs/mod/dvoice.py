@@ -1,6 +1,6 @@
 
 import discord
-from discord.ext import commands
+
 
 from typing import TYPE_CHECKING
 
@@ -13,7 +13,7 @@ class DynamicVoiceCog(discord.Cog):
         self.bot = bot
         self.dvc_dict = {}
 
-    @commands.Cog.listener()
+    @discord.Cog.listener()
     async def on_voice_state_update(
         self,
         member: discord.Member,

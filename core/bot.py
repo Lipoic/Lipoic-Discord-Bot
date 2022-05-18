@@ -9,8 +9,6 @@ import os
 import discord
 import asyncio
 
-from discord.ext import commands
-
 
 from .db import DB
 from .events import MainEventsCog
@@ -43,15 +41,10 @@ class LIPOIC(discord.Bot):
 
         self._is_ready = asyncio.Event()
 
-    def get_cog(self, name: str, /) -> Optional[commands.Cog]:
+    def get_cog(self, name: str, /) -> Optional[discord.Cog]:
         cog = super().get_cog(name)
-        assert cog is None or isinstance(cog, commands.Cog)
+        assert cog is None or isinstance(cog, discord.Cog)
         return cog
-
-    def get_command(self, name: str, /) -> Optional[commands.Command]:
-        com = super().get_command(name)
-        assert com is None or isinstance(com, commands.Command)
-        return com
 
     async def get_or_fetch_user(self, user_id: Union[int, str]) -> discord.User:
         """
@@ -142,8 +135,6 @@ class LIPOIC(discord.Bot):
         rich_output_message += f"[red]python version: {platform.python_version()}[/red]\n"
         rich_output_message += f"[red]py-cord version: {discord.__version__}[/red]\n"
         rich_output_message += f"[red]LIPOIC version: {self.__version__}[/red]\n"
-
-        rich.get_console().print(rich_output_message)
 
         self.load_extension("cogs.__init__")
         self.add_cog(MainEventsCog(self))

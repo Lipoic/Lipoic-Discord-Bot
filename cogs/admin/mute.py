@@ -1,10 +1,11 @@
+from typing import List
 import discord
+from discord import ApplicationContext, Option
 from discord.ext import commands
-from discord import Embed, ApplicationContext, Option
 import datetime
 
 
-class MuteCog(commands.Cog):
+class MuteCog(discord.Cog):
     def __init__(self, bot):
         self.bot = bot
 
@@ -26,24 +27,27 @@ class MuteCog(commands.Cog):
             hours=hour, days=day, weeks=week
         )
         await member.timeout_for(duration=duration, reason=reason)
-        time = ""
-        if week >= 1:
-            time += f"{week}週 "
-        if day >= 1:
-            time += f"{day}天 "
-        if hour >= 1:
-            time += f"{hour}小時 "
-        if minute >= 1:
-            time += f"{minute}分鐘 "
-        if second >= 1:
-            time += f"{second}秒 "
-        embed = Embed(title="禁言成功!", description=f"原因: {reason}\n持續時間: {time}")
+        time_message: List[str] = []
+        if week:
+            time_message.append(f"{week}週")
+        if day:
+            time_message.append(f"{day}天")
+        if hour:
+            time_message.append(f"{hour}小時")
+        if minute:
+            time_message.append(f"{minute}分鐘")
+        if second:
+            time_message.append(f"{second}秒")
+        embed = discord.Embed(
+            title="禁言成功!", description=f"原因: {reason}\n持續時間: {' '.join(time_message)}"
+        )
         await ctx.respond(embed=embed, ephemeral=True)
 
     @mute.error
     async def mute_error(self, ctx: ApplicationContext, error):
-        embed = Embed(
-            title="禁言失敗!", description=f"Error:```{error}```", color=0xe74c3c)
+        embed = discord.Embed(
+            title="禁言失敗!", description=f"Error:```{error}```", color=0xe74c3c
+        )
         await ctx.respond(embed=embed, ephemeral=True)
 
 
