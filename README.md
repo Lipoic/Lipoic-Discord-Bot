@@ -25,5 +25,5 @@ python main.py
 pipenv lock -r > requirements.txt
 docker build -t lipoic-bot . --no-cache
 # run
-docker run -d lipoic-bot
+docker run -e DISCORD_TOKEN={your token} -d lipoic-bot
 ```

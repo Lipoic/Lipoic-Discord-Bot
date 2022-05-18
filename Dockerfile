@@ -1,10 +1,11 @@
 
-FROM python:3.10.4 as builder
+FROM python:3.10.4-alpine as base
+FROM base as builder
 
 COPY requirements.txt /requirements.txt
 RUN pip install --user -r /requirements.txt
 
-FROM python:3.10.4
+FROM base
 WORKDIR /code
 
 COPY --from=builder /root/.local /root/.local

@@ -7,7 +7,7 @@ if TYPE_CHECKING:
     from core import LIPOIC
 
 
-class ClearCog(commands.Cog):
+class ClearCog(discord.Cog):
     def __init__(self, bot: 'LIPOIC'):
         self.bot = bot
 

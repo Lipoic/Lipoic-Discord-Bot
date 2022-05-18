@@ -1,4 +1,3 @@
-from datetime import datetime
 import platform
 
 import rich
@@ -14,7 +13,7 @@ from discord.ext import commands
 
 
 from .db import DB
-from cogs import loadAll
+from .events import MainEventsCog
 
 __all__ = ["LIPOIC"]
 log = logging.getLogger("lipoic")
@@ -146,5 +145,6 @@ class LIPOIC(discord.Bot):
 
         rich.get_console().print(rich_output_message)
 
-        loadAll(self)
+        self.load_extension("cogs.__init__")
+        self.add_cog(MainEventsCog(self))
         super().run(*args, **kwargs)

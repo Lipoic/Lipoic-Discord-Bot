@@ -1,5 +1,4 @@
-from typing import Optional, TypedDict
-from discord import List
+from typing import Optional, TypedDict, List
 from playhouse.sqlite_ext import IntegerField, TextField, JSONField
 
 
