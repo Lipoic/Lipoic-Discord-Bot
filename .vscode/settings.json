@@ -4,7 +4,13 @@
   "python.linting.flake8Enabled": true,
   "python.linting.flake8Args": [
     "--max-line-length=120",
-    "--ignore=E402,F841,F401,E302,E305,W503"
+    "--ignore=E402,F841,F401,E302,E305,W503",
+    "--exclude=.git,__pycache__,build,dist",
+    "--ignore=E722,F821,F401"
   ],
-  "commentTranslate.multiLineMerge": true
+  "commentTranslate.multiLineMerge": true,
+  "python.linting.flake8CategorySeverity.E": "Error",
+  "python.linting.flake8CategorySeverity.F": "Hint",
+  "python.linting.flake8CategorySeverity.W": "Warning",
+  "python.linting.flake8Path": "flake8"
 }
