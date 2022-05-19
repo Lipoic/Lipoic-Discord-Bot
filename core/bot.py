@@ -1,8 +1,7 @@
 import platform
 
-import rich
 from main import __version__
-from typing import Any, List, Optional, Union
+from typing import Any, List, Literal, Optional, Union
 import logging
 
 import os
@@ -15,6 +14,7 @@ from .events import MainEventsCog
 
 __all__ = ["LIPOIC"]
 log = logging.getLogger("lipoic")
+loadCogType = Literal["load", "reload", "unload"]
 
 
 class LIPOIC(discord.Bot):
@@ -92,6 +92,11 @@ class LIPOIC(discord.Bot):
             return member
         return await guild.fetch_member(guild, member_id)
 
+    async def get_or_fetch_channel(self, channel_id: Union[int, str]):
+        if (member := self.get_channel(int(channel_id))) is not None:
+            return member
+        return await self.fetch_channel(channel_id)
+
     async def is_owner(self, user: Union[discord.User, discord.Member], /) -> bool:
         """
         has is_owner
@@ -119,16 +124,24 @@ class LIPOIC(discord.Bot):
 
         super().add_cog(cog, override=override)
 
-    def load_cog_dir(self, package_path: str, path: str, *, deep: bool = True):
+    def load_cog_dir(self, package_path: str, path: str, *, deep: bool = True, type: loadCogType = "load"):
+        switch = {
+            "load": self.load_extension,
+            "unload": self.unload_extension,
+            "reload": self.reload_extension
+        }
+        callFunc = switch.get(type)
+        if callFunc is None:
+            raise ValueError("type must be load, unload or reload")
         path = os.path.dirname(os.path.realpath(path)) if \
             os.path.isfile(path) else path
 
         for _ in os.listdir(path):
             fullpath = os.path.join(path, _)
             if os.path.isfile(fullpath) and _.endswith(".py") and _ != "__init__.py":
-                self.load_extension(f"{package_path}.{_[:-3]}")
+                callFunc(f"{package_path}.{_[:-3]}")
             elif deep and os.path.isdir(fullpath):
-                self.load_cog_dir(f"{package_path}.{_}", fullpath)
+                self.load_cog_dir(f"{package_path}.{_}", fullpath, type=type)
 
     def run(self, *args: Any, **kwargs: Any):
         rich_output_message = ""

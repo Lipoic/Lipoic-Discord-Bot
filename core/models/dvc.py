@@ -5,7 +5,7 @@ from playhouse.sqlite_ext import IntegerField
 from . import BaseModel
 
 
-class DvcModel(BaseModel):
+class Dvc(BaseModel):
     """dvc channel model"""
 
     # channel

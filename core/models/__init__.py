@@ -3,14 +3,14 @@ from typing import Dict, List
 from .base_model import BaseModel, DATABASE
 
 # Models
-from .member import DevMemberType, DevMemberModel
-from .dvc import DvcType, DvcModel
+from .member import DevMemberType, DevMember
+from .dvc import DvcType, Dvc
 
 
 def getModels() -> Dict[str, BaseModel]:
     modelsList: List[BaseModel] = [
-        DevMemberModel,
-        DvcModel,
+        DevMember,
+        Dvc,
     ]
 
     modelsDict: Dict[str, BaseModel] = dict()
