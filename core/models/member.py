@@ -5,7 +5,7 @@ from playhouse.sqlite_ext import IntegerField, TextField, JSONField
 from . import BaseModel
 
 
-class DevMemberModel(BaseModel):
+class DevMember(BaseModel):
     """dev members data model"""
 
     # dev member dc id
