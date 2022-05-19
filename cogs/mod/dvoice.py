@@ -14,7 +14,6 @@ if TYPE_CHECKING:
 class DynamicVoiceCog(discord.Cog):
     def __init__(self, bot: 'LIPOIC') -> None:
         self.bot = bot
-        self.dvc_dict = {}
 
     @discord.Cog.listener()
     async def on_voice_state_update(
