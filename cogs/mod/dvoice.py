@@ -32,9 +32,10 @@ class DynamicVoiceCog(discord.Cog):
                 dvcChannel = await after.channel.category.create_voice_channel(name=f"{member.display_name}的頻道")
                 channel = dvcChannel
                 try:
-                    Dvc \
-                        .insert(user_id=member.id, channel_id=channel.id) \
-                        .execute()
+                    Dvc.insert(
+                        user_id=member.id,
+                        channel_id=channel.id
+                    ).execute()
                 except peewee.InterfaceError:
                     ...
             await member.move_to(channel)
