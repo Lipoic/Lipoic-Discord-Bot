@@ -24,7 +24,7 @@ class DynamicVoiceCog(discord.Cog):
     ):
         Dvc = self.bot.db.Dvc
 
-        if after.channel and after.channel.id == 976688759624056832:  # Channel ID Just For Test
+        if after.channel and after.channel.id == self.bot.dvc_id:  # Channel ID Just For Test
             try:
                 data: DvcType = Dvc.get(Dvc.user_id == member.id)
                 channel = await self.bot.get_or_fetch_channel(data.channel_id)

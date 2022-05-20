@@ -37,6 +37,8 @@ class LIPOIC(discord.Bot):
         self._uptime = None
         self.dev_user_ids: List[int] = set(kwargs.get("dev_user_ids", set()))
 
+        self.dvc_id = 977050757461336124  # dynamic voice channel ID
+
         super().__init__(*args, **kwargs)
 
         self._is_ready = asyncio.Event()
