@@ -25,9 +25,8 @@ class DynamicVoiceSetupCog(discord.Cog):
         elif mode == "fix":
             dvc = await self.bot.get_or_fetch_channel(self.bot.dvc_id)
             for channel in dvc.category.channels:
-                if not channel.members and channel.id in [id.channel_id for id in Dvc.select()]:
+                if not channel.members and Dvc.delete().where(Dvc.channel_id == channel.id).execute():
                     await channel.delete()
-                    Dvc.delete().where(Dvc.channel_id == channel.id).execute()
             embed = Embed(
                 title="修復成功!", color=0x2ecc71
             )
