@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 import discord
 from discord import ApplicationContext, Option, Embed
 from discord.ext import commands
@@ -28,7 +28,10 @@ class ChefCog(discord.Cog):
             conflict_target=[memberDb.user_id],
             update={memberDb.chef_count: memberDb.chef_count + 1}
         ).execute()
-        await ctx.respond(f"{member.mention} 已經被炒了!!")
+
+        data: MemberType = memberDb.get_or_none(memberDb.user_id == member.id)
+
+        await ctx.respond(f"{member.mention} 好電! 已經被廚了 {data.chef_count} 次")
 
     @discord.slash_command(description="顯示炒了多少次", guild_only=True)
     async def chef_rank(self, ctx: ApplicationContext):
