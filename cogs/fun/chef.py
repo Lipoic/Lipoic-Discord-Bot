@@ -33,7 +33,7 @@ class ChefCog(discord.Cog):
 
         await ctx.respond(f"{member.mention} 好電! 已經被廚了 {data.chef_count} 次")
 
-    @discord.slash_command(description="顯示炒了多少次", guild_only=True)
+    @discord.slash_command(description="電神排行榜", guild_only=True)
     async def chef_rank(self, ctx: ApplicationContext):
         memberDb = self.bot.db.Member
 
@@ -41,7 +41,7 @@ class ChefCog(discord.Cog):
             memberDb.chef_count.desc()
         ).limit(10).execute()
 
-        await ctx.respond(embed=discord.Embed(title="排行榜", description="\n".join([
+        await ctx.respond(embed=discord.Embed(title="電神排行榜", description="\n".join([
             f"`{index + 1}.` <@{data.user_id}>: {data.chef_count}次" for index,
             data in enumerate(data)
         ]) or "Emm 沒有人被炒過ㄟ!!"))
