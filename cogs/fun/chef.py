@@ -19,7 +19,8 @@ class ChefCog(discord.Cog):
     async def chef(
         self,
         ctx: ApplicationContext,
-        member: Option(discord.Member, "成員")
+        member: Option(discord.Member, "要電的電神"),
+        message: Option(str, "電人的訊息")
     ):
         member: discord.Member = member
         memberDb = self.bot.db.Member
@@ -31,7 +32,7 @@ class ChefCog(discord.Cog):
 
         data: MemberType = memberDb.get_or_none(memberDb.user_id == member.id)
 
-        await ctx.respond(f"{member.mention} 好電! 已經被廚了 {data.chef_count} 次")
+        await ctx.respond(f"{member.mention} 好電! {message} 已經被廚了{data.chef_count}次")
 
     @discord.slash_command(description="電神排行榜", guild_only=True)
     async def chef_rank(self, ctx: ApplicationContext):
