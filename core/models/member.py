@@ -1,29 +1,17 @@
-from typing import Optional, TypedDict, List
-from playhouse.sqlite_ext import IntegerField, TextField, JSONField
+from typing import TypedDict
+from playhouse.sqlite_ext import IntegerField
 
 
 from . import BaseModel
 
 
-class DevMember(BaseModel):
-    """dev members data model"""
-
-    # dev member dc id
+class Member(BaseModel):
+    """member data model"""
     user_id = IntegerField(null=True, unique=True)
-
-    # dev member name
-    name = TextField(null=True)
-
-    # dev member position list
-    position = JSONField(default=lambda: [])
-
-    # dev member github name
-    github_name = TextField(unique=True)
+    chef_count = IntegerField(default=0)
 
 
-class DevMemberType(TypedDict):
-    """Dev Member data Type"""
+class MemberType(TypedDict):
+    """member data model Type"""
     user_id: int
-    name: Optional[str]
-    position: List[str]
-    github_name: Optional[str]
+    chef_count: int
