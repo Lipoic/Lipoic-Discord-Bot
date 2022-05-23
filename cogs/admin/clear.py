@@ -33,14 +33,36 @@ class ClearCog(discord.Cog):
         ctx: ApplicationContext,
         count: Option(int, "輸入要刪除的訊息數量", min_value=1, max_value=512),
         reason: Option(str, "Reason", default="無原因"),
-        member: Option(discord.Member, "要刪除的成員訊息", default=None)
+        member: Option(discord.Member, "要刪除的成員訊息", default=None),
+        before: Option(str, "刪除這則訊息以前的訊息(請輸入訊息ID)", default=None),
+        after: Option(str, "刪除以這則訊息以後的訊息(請輸入訊息ID)", default=None)
     ):
+        if before and after:
+            embed = Embed(
+                title="錯誤!",
+                description="`before` 和 `after` 選項不得同時出現",
+                color=0xe74c3c
+            )
+            await ctx.respond(embed=embed, ephemeral=True)
+            return
+        elif before:
+            before: discord.Message = await ctx.fetch_message(int(before))
+        elif after:
+            after: discord.Message = await ctx.fetch_message(int(after))
+
         def del_check(message: discord.Message):
-            return message.author == member or member is None
-        del_message = await ctx.channel.purge(limit=count, check=del_check)
+            return message.author == member or not member
+        del_message = await ctx.channel.purge(limit=count, check=del_check, before=before, after=after)
         embed = Embed(
             title=f"成功刪除了`{len(del_message)}`則訊息!",
             description=f"原因: {reason}"
+        )
+        await ctx.respond(embed=embed, ephemeral=True)
+
+    @purge.error
+    async def purge_error(self, ctx: ApplicationContext, error):
+        embed = discord.Embed(
+            title="刪除失敗!", description=f"Error:```{error}```", color=0xe74c3c
         )
         await ctx.respond(embed=embed, ephemeral=True)
 
