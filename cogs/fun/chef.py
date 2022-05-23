@@ -42,10 +42,10 @@ class ChefCog(discord.Cog):
             memberDb.chef_count.desc()
         ).limit(10).execute()
 
-        await ctx.respond(embed=discord.Embed(title="電神排行榜", description="\n".join([
-            f"`{index + 1}.` <@{data.user_id}>: {data.chef_count}次" for index,
+        await ctx.respond(embed=Embed(title="電神排行榜", description="\n".join([
+            f"`第{index + 1}名`  <@{data.user_id}>: {data.chef_count}次" for index,
             data in enumerate(data)
-        ]) or "Emm 沒有人被炒過ㄟ!!"))
+        ]) or "居然?還沒有人被電過欸?!"))
 
 
 def setup(bot):
