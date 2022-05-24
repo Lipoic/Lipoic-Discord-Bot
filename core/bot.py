@@ -72,7 +72,7 @@ class LIPOIC(discord.Bot):
             self.emit("newListener", event_name, event_name=event_name)
             self.lipoic_events[event_name] = [func]
 
-    def on(self, func: CoreFuncType, event_name: str = discord.MISSING) -> None:
+    def on(self, func: CoreFuncType, event_name: Optional[str] = None) -> None:
         return self.addEventListener(func, event_name)
 
     async def get_or_fetch_user(self, user_id: Union[int, str]) -> discord.User:
