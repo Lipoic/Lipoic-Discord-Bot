@@ -76,6 +76,15 @@ class LIPOIC(discord.Bot):
     def on(self, func: CoreFuncType, event_name: Optional[str] = None) -> None:
         return self.addEventListener(func, event_name)
 
+    def removeEventListener(self, func: CoreFuncType, event_name: Optional[str] = None) -> None:
+        event_name = event_name or func.__name__
+
+        if event_name in self.extra_events:
+            try:
+                self.extra_events[event_name].remove(func)
+            except ValueError:
+                ...
+
     async def get_or_fetch_user(self, user_id: Union[int, str]) -> discord.User:
         """
         get or fetch user
