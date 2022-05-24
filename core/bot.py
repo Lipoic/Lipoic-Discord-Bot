@@ -1,7 +1,7 @@
 import platform
 
 from main import __version__
-from typing import Any, List, Literal, Optional, Union
+from typing import Any, Dict, List, Callable, Coroutine, Literal, Optional, Union
 import logging
 
 import os
@@ -15,6 +15,7 @@ from .events import MainEventsCog
 __all__ = ["LIPOIC"]
 log = logging.getLogger("lipoic")
 loadCogType = Literal["load", "reload", "unload"]
+CoreFuncType = Callable[..., Coroutine[Any, Any, Any]]
 
 
 class LIPOIC(discord.Bot):
@@ -22,6 +23,7 @@ class LIPOIC(discord.Bot):
 
     def __init__(self, *args, **kwargs):
         self._config = []
+        self.lipoic_events: Dict[str, CoreFuncType] = {}
 
         kwargs["owner_ids"] = set(kwargs.get("owner_ids", set()))
 
@@ -47,6 +49,31 @@ class LIPOIC(discord.Bot):
         cog = super().get_cog(name)
         assert cog is None or isinstance(cog, discord.Cog)
         return cog
+
+    def emit(self, event_name: str, *args: Any, **kwargs: Any) -> None:
+        for event in self.lipoic_events.get(event_name, []):
+            self.lipoic_schedule_event(event, event_name, *args, **kwargs)
+
+    def lipoic_schedule_event(
+        self,
+        func: CoreFuncType,
+        event_name: str,
+        *args: Any,
+        **kwargs: Any,
+    ) -> asyncio.Task:
+        return asyncio.create_task(self._run_event(func, event_name, *args, **kwargs), name=f"lipoic: {event_name}")
+
+    def addEventListener(self, func: CoreFuncType, event_name: Optional[str] = None) -> None:
+        event_name = event_name or func.__name__
+
+        if event_name in self.lipoic_events:
+            self.lipoic_events[event_name].append(func)
+        else:
+            self.emit("newListener", event_name, event_name=event_name)
+            self.lipoic_events[event_name] = [func]
+
+    def on(self, func: CoreFuncType, event_name: str = discord.MISSING) -> None:
+        return self.addEventListener(func, event_name)
 
     async def get_or_fetch_user(self, user_id: Union[int, str]) -> discord.User:
         """
