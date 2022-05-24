@@ -39,7 +39,8 @@ class LIPOIC(discord.Bot):
         self._uptime = None
         self.dev_user_ids: List[int] = set(kwargs.get("dev_user_ids", set()))
 
-        self.dvc_id = 977050757461336124  # dynamic voice channel ID
+        # dynamic voice channel ID
+        self.dvc_ids: List[int] = [977050757461336124]
 
         super().__init__(*args, **kwargs)
 
