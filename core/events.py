@@ -27,8 +27,10 @@ class MainEventsCog(discord.Cog):
 
     @discord.Cog.listener()
     async def on_application_command_error(self, ctx: discord.ApplicationContext, error: discord.DiscordException):
-        print(type(error))
-        if isinstance(error, discord.ApplicationCommandInvokeError):
-            await ctx.respond("此命令不能在私人消息中使用")
-        elif isinstance(error, commands.MissingPermissions):
-            await ctx.respond("你沒有權限使用此命令")
+        print(f"{type(error)}: {error}")
+        # if isinstance(error, discord.ApplicationCommandInvokeError):
+        #     embed = discord.Embed(title="發生錯誤!", description=f"Error:```{error}```", color=0xe74c3c)
+        #     await ctx.respond(embed=embed)
+        if isinstance(error, commands.MissingPermissions):
+            embed = discord.Embed(title="發生錯誤!", description="你沒有權限執行指令", color=0xe74c3c)
+            await ctx.respond(embed=embed)
