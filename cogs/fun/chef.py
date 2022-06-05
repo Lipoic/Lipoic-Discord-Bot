@@ -32,7 +32,10 @@ class ChefCog(discord.Cog):
 
         data: MemberType = memberDb.get_or_none(memberDb.user_id == member.id)
 
-        await ctx.respond(f"{member.mention} 好電! {message} 已經被廚了{data.chef_count}次!")
+        await ctx.respond(
+            f"{member.mention} 好電! {message} 已經被廚了{data.chef_count}次!",
+            allowed_mentions=discord.AllowedMentions(everyone=False, users=False, roles=False, replied_user=False)
+        )
 
     @discord.slash_command(description="電神排行榜", guild_only=True)
     async def chef_rank(self, ctx: ApplicationContext):
