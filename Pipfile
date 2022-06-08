@@ -9,6 +9,7 @@ python-dotenv = "*"
 rich = "*"
 flake8 = "*"
 peewee = "*"
+sseclient = "*"
 
 [dev-packages]
 autopep8 = "*"

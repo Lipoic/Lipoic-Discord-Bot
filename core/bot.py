@@ -38,6 +38,9 @@ class LIPOIC(discord.Bot):
         self.db.connect()
         self._uptime = None
         self.dev_user_ids: List[int] = set(kwargs.get("dev_user_ids", set()))
+        self.configs = {
+            'newApplyServerToken': os.getenv('NEW_APPLY_SERVER_TOKEN'),
+        }
 
         # dynamic voice channel ID
         self.dvc_ids: List[int] = [977050757461336124]
