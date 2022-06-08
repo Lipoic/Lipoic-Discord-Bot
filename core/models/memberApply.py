@@ -17,6 +17,6 @@ class MemberApply(BaseModel):
 
 class MemberApplyType(TypedDict):
     """Member Apply type"""
-    user_id: str
+    user_id: int
     code: str
     job: List[str]
