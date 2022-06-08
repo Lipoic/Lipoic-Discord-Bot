@@ -8,8 +8,8 @@ from . import BaseModel
 class MemberApply(BaseModel):
     """Member Apply model"""
 
-    # user id
-    user_id = IntegerField(null=True, unique=True)
+    # thread_id
+    thread_id = IntegerField(null=True, unique=True)
     # check code
     code = TextField(null=True)
     # jobs string list
@@ -18,6 +18,6 @@ class MemberApply(BaseModel):
 
 class MemberApplyType(TypedDict):
     """Member Apply type"""
-    user_id: int
+    thread_id: int
     code: str
     job: List[str]
