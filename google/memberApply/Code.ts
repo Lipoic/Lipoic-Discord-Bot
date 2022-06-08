@@ -10,15 +10,15 @@ export const onFormSubmit = (
 ) => {
   const { namedValues } = event;
   const data = {
-    email: namedValues['電子郵件'].shift(),
-    selfIntroduction: namedValues['自我介紹'].shift(),
-    identity: namedValues['我目前的身份'].shift(),
-    CV: namedValues['我的簡歷 (經歷、作品等)'].shift(),
-    reason: namedValues['我為什麼會想要加入 Lipoic'].shift(),
-    thoughts: namedValues['我對於 Lipoic 的想法或願景？'].shift(),
-    jobs: [namedValues['我想參與的職務 (第一順位)'].shift()],
-    remark: namedValues['備註'].shift(),
-    time: namedValues['時間戳記'].shift(),
+    email: namedValues['電子郵件']?.shift(),
+    selfIntroduction: namedValues['自我介紹']?.shift(),
+    identity: namedValues['我目前的身份']?.shift(),
+    CV: namedValues['我的簡歷 (經歷、作品等)']?.shift(),
+    reason: namedValues['我為什麼會想要加入 Lipoic']?.shift(),
+    thoughts: namedValues['我對於 Lipoic 的想法或願景？']?.shift(),
+    jobs: [namedValues['我想參與的職務 (第一順位)']?.shift()],
+    remark: namedValues['備註']?.shift(),
+    time: namedValues['時間戳記']?.shift(),
   };
   const job2 = namedValues['我想參與的職務 (第二順位，選填)'];
   const job3 = namedValues['我想參與的職務 (第三順位，選填)'];

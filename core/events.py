@@ -1,5 +1,6 @@
 
 from datetime import datetime
+import json
 import discord
 from discord.ext import commands
 from sseclient import SSEClient
@@ -35,10 +36,13 @@ class MainEventsCog(discord.Cog):
                 }
             )
             for data in messages:
-                bot.dispatch('new_apply', data)
+                try:
+                    data: dict = json.loads(data)
+                finally:
+                    bot.dispatch('new_apply', data)
         bot.loop.create_task(getNewApply())
 
-    @ discord.Cog.listener()
+    @discord.Cog.listener()
     async def on_application_command_error(self, ctx: discord.ApplicationContext, error: discord.DiscordException):
         print(f"{type(error)}: {error}")
         # if isinstance(error, discord.ApplicationCommandInvokeError):
