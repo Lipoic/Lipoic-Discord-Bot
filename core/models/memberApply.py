@@ -8,10 +8,11 @@ from . import BaseModel
 class MemberApply(BaseModel):
     """Member Apply model"""
 
-    # channel
-    user_id = IntegerField(null=True, unique=True)
     # user id
+    user_id = IntegerField(null=True, unique=True)
+    # check code
     code = TextField(null=True)
+    # jobs string list
     job = JSONField(default=lambda: [])
 
 
