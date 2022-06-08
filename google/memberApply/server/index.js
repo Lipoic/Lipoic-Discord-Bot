@@ -29,9 +29,9 @@ app
         'Cache-Control': 'no-cache',
         Connection: 'keep-alive',
       });
-      res.write('data:start\n\n');
+      res.write('event:start\ndata:start\nretry:1000\n\n');
       app.on('new-apply', (data) => {
-        res.write(`data:${JSON.stringify(data)}\n\n`);
+        res.write(`event:new_apply\ndata:${JSON.stringify(data)}\n\n`);
       });
     } else res.status(403).send('error');
   });

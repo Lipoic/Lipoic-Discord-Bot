@@ -8,7 +8,8 @@ const TOKEN = tokensData.getRange('B2').getValues().shift().shift();
 export const onFormSubmit = (
   event: GoogleAppsScript.Events.SheetsOnFormSubmit & { namedValues: formData }
 ) => {
-  const { namedValues } = event;
+  const { namedValues, range } = event;
+
   const data = {
     email: namedValues['電子郵件']?.shift(),
     selfIntroduction: namedValues['自我介紹']?.shift(),
@@ -19,12 +20,13 @@ export const onFormSubmit = (
     jobs: [namedValues['我想參與的職務 (第一順位)']?.shift()],
     remark: namedValues['備註']?.shift(),
     time: namedValues['時間戳記']?.shift(),
+    ID: range.getRowIndex() - 1,
   };
   const job2 = namedValues['我想參與的職務 (第二順位，選填)'];
   const job3 = namedValues['我想參與的職務 (第三順位，選填)'];
 
-  job2.length && data.jobs.push(job2.shift());
-  job3.length && data.jobs.push(job3.shift());
+  job2?.length && data.jobs.push(job2.shift());
+  job3?.length && data.jobs.push(job3.shift());
 
   UrlFetchApp.fetch(SERVER_URL, {
     method: 'post',
