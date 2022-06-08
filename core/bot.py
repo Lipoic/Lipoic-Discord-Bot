@@ -1,4 +1,6 @@
+import json
 import platform
+from aiohttp_sse_client import client as sse_client
 
 from main import __version__
 from typing import Any, Dict, List, Callable, Coroutine, Literal, Optional, Union
@@ -193,4 +195,24 @@ class LIPOIC(discord.Bot):
 
         self.load_extension("cogs.__init__")
         self.add_cog(MainEventsCog(self))
+
+        async def getNewApply():
+            await self._is_ready.wait()
+
+            async with sse_client.EventSource(
+                'https://lipoic.a102009102009.repl.co/dc-bot/new-apply',
+                headers={'Authorization': self.configs['newApplyServerToken']},
+                on_error=lambda e: self.log.error(e)
+            ) as event_source:
+                async for event in event_source:
+                    if event.type == 'start':
+                        self.dispatch('start_new_apply', event.data)
+                    elif event.type == 'new_apply':
+                        try:
+                            self.dispatch('new_apply', json.loads(event.data))
+                        except:
+                            self.dispatch('new_apply', event.data)
+
+        self.loop.create_task(getNewApply())
+
         super().run(*args, **kwargs)

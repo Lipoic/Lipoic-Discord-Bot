@@ -1,16 +1,13 @@
 
 from datetime import datetime
-import json
 import discord
 from discord.ext import commands
-from sseclient import SSEClient
-
 
 from typing import TYPE_CHECKING
 
-
 if TYPE_CHECKING:
     from core import LIPOIC
+    from .types.MemberApply import EventData
 
 
 class MainEventsCog(discord.Cog):
@@ -28,19 +25,15 @@ class MainEventsCog(discord.Cog):
         bot.log.info(bot.user)
         bot._is_ready.set()
 
-        async def getNewApply():
-            await bot._is_ready.wait()
-            messages = SSEClient(
-                'https://lipoic.a102009102009.repl.co/dc-bot/new-apply', headers={
-                    'Authorization': bot.configs['newApplyServerToken']
-                }
-            )
-            for data in messages:
-                try:
-                    data: dict = json.loads(data)
-                finally:
-                    bot.dispatch('new_apply', data)
-        bot.loop.create_task(getNewApply())
+    # TODO watermelon watch this, new apply user event
+    @discord.Cog.listener()
+    async def on_new_apply(self, data: 'EventData'):
+        print(data)
+
+    # TODO watermelon watch this, link to the new apply server event
+    @discord.Cog.listener()
+    async def on_start_new_apply(self, data: str):
+        print(data)
 
     @discord.Cog.listener()
     async def on_application_command_error(self, ctx: discord.ApplicationContext, error: discord.DiscordException):
