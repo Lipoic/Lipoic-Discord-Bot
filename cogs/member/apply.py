@@ -1,13 +1,10 @@
-from typing import List
 import discord
 from discord import Embed, ChannelType
-from discord.ext import commands
 
 from typing import TYPE_CHECKING
 
 
 if TYPE_CHECKING:
-    from core.models import MemberType
     from core import LIPOIC
     from core.types.MemberApply import EventData
 
