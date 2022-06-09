@@ -21,7 +21,6 @@ class MemberApplyCog(discord.Cog):
         apply_channel: discord.TextChannel = self.bot.get_channel(
             984272090565849098  # ID just for test
         )
-        apply_thread = await apply_channel.create_thread(name=f"編號{data.ID}|申請{data.jobs[0]}")
         embed = Embed(title=f"第{data.ID}號應徵者")
         embed.add_field(name="自介:", value=data.selfIntro, inline=False)
         embed.add_field(name="目前身分:", value=data.identity, inline=False)
@@ -32,9 +31,11 @@ class MemberApplyCog(discord.Cog):
             f"第`{index + 1}`順位:```{job}```" for index,
             job in enumerate(data.jobs)
         ]), inline=False)
+
         if data.remark:
             embed.add_field(name="備註:", value=data.remark, inline=False)
-        await apply_thread.send(embed=embed)
+        msg = await apply_channel.send(embed=embed)
+        await msg.create_thread(name=f"編號{data.ID}|申請{data.jobs[0]}")
         # apply_thread
 
 
