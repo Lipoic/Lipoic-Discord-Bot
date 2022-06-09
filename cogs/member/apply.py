@@ -21,22 +21,21 @@ class MemberApplyCog(discord.Cog):
         apply_channel: discord.TextChannel = self.bot.get_channel(
             984272090565849098  # ID just for test
         )
-        apply_message = f"""第{data.ID}號應徵者:
-        自介:```
-        {data.selfIntro}```
-        目前身分:{data.identity}
-        簡歷:```
-        {data.CV}```
-        加入原因:```
-        {data.reason}```
-        想法或願景:```
-        {data.thoughts}```
-        欲申請的職位:
-        """.join([
+        apply_thread = await apply_channel.create_thread(f"編號{data.ID}|申請{data.jobs[0]}")
+        embed = Embed(title=f"第{data.ID}號應徵者")
+        embed.add_field(name="自介:", value=data.selfIntro, inline=False)
+        embed.add_field(name="目前身分:", value=data.identity, inline=False)
+        embed.add_field(name="簡歷:", value=data.CV, inline=False)
+        embed.add_field(name="加入原因:", value=data.reason, inline=False)
+        embed.add_field(name="想法或願景:", value=data.thoughts, inline=False)
+        embed.add_field(name="欲申請的職位:", value="\n".join([
             f"第`{index + 1}`順位:```{job}```" for index,
             job in enumerate(data.jobs)
-        ])
-        apply_thread = await apply_channel.create_thread(f"編號{data.ID}|申請{data.jobs[0]}", apply_message)
+        ]), inline=False)
+        if data.remark:
+            embed.add_field(name="備註:", value=data.remark, inline=False)
+        await apply_thread.send(embed=embed)
+        # apply_thread
 
 
 def setup(bot):
