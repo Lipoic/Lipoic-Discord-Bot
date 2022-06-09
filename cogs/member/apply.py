@@ -39,6 +39,14 @@ class MemberApplyCog(discord.Cog):
         )
         await apply_thread.send(embed=embed)
 
+        applyDb = self.bot.db.MemberApply
+
+        applyDb.insert(
+            thread_id=apply_thread.id,
+            email=data.email,
+            job=data.jobs
+        )
+
 
 def setup(bot):
     bot.add_cog(MemberApplyCog(bot))
