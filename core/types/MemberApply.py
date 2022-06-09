@@ -19,7 +19,7 @@ class EventData(object):
     # email | 電子郵件
     email: Text
     # self introduction | 自介
-    selfIntroduction: Text
+    selfIntro: Text
     # identity | 身分
     identity: identityType | Text
     # CV | 簡歷

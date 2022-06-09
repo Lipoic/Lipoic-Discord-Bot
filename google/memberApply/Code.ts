@@ -12,7 +12,7 @@ export const onFormSubmit = (
 
   const data = {
     email: namedValues['電子郵件']?.shift(),
-    selfIntroduction: namedValues['自我介紹']?.shift(),
+    selfIntro: namedValues['自我介紹']?.shift(),
     identity: namedValues['我目前的身份']?.shift(),
     CV: namedValues['我的簡歷 (經歷、作品等)']?.shift(),
     reason: namedValues['我為什麼會想要加入 Lipoic']?.shift(),
