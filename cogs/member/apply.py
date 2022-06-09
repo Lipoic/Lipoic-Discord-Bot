@@ -34,8 +34,12 @@ class MemberApplyCog(discord.Cog):
 
         if data.remark:
             embed.add_field(name="備註:", value=data.remark, inline=False)
-        msg = await apply_channel.send(embed=embed)
-        await msg.create_thread(name=f"編號{data.ID}|申請{data.jobs[0]}")
+
+        applyChMsg = await apply_channel.send(f"編號{data.ID}|申請{data.jobs[0]}")
+
+        create_thread = await applyChMsg.create_thread(name=f"編號{data.ID}|申請{data.jobs[0]}")
+        await create_thread.send(embed=embed)
+
         # apply_thread
 
 
