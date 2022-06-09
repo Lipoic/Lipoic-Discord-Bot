@@ -1,6 +1,6 @@
 from typing import List
 import discord
-from discord import ApplicationContext, Option, Embed
+from discord import ChannelType, Embed
 from discord.ext import commands
 
 from typing import TYPE_CHECKING
@@ -27,20 +27,21 @@ class MemberApplyCog(discord.Cog):
         embed.add_field(name="簡歷:", value=data.CV, inline=False)
         embed.add_field(name="加入原因:", value=data.reason, inline=False)
         embed.add_field(name="想法或願景:", value=data.thoughts, inline=False)
+        chinese_num = ["一", "二", "三"]
         embed.add_field(name="欲申請的職位:", value="\n".join([
-            f"第`{index + 1}`順位:```{job}```" for index,
+            f"第{chinese_num[index]}順位:```{job}```" for index,
             job in enumerate(data.jobs)
         ]), inline=False)
 
         if data.remark:
             embed.add_field(name="備註:", value=data.remark, inline=False)
 
-        applyChMsg = await apply_channel.send(f"編號{data.ID}|申請{data.jobs[0]}")
-
-        create_thread = await applyChMsg.create_thread(name=f"編號{data.ID}|申請{data.jobs[0]}")
-        await create_thread.send(embed=embed)
-
-        # apply_thread
+        apply_thread = await apply_channel.create_thread(
+            name=f"編號 {data.ID} | 申請 {data.jobs[0]}",
+            type=ChannelType.public_thread,
+            reason=f"編號#{data.ID}應徵申請"
+        )
+        await apply_thread.send(embed=embed)
 
 
 def setup(bot):
