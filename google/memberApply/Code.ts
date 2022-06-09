@@ -22,11 +22,11 @@ export const onFormSubmit = (
     time: namedValues['時間戳記']?.shift(),
     ID: range.getRowIndex() - 1,
   };
-  const job2 = namedValues['我想參與的職務 (第二順位，選填)'];
-  const job3 = namedValues['我想參與的職務 (第三順位，選填)'];
+  const job2 = namedValues['我想參與的職務 (第二順位，選填)']?.shift();
+  const job3 = namedValues['我想參與的職務 (第三順位，選填)']?.shift();
 
-  job2?.length && data.jobs.push(job2.shift());
-  job3?.length && data.jobs.push(job3.shift());
+  job2 && data.jobs.push(job2);
+  job3 && data.jobs.push(job3);
 
   UrlFetchApp.fetch(SERVER_URL, {
     method: 'post',

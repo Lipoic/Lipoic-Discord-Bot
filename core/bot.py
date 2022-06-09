@@ -200,19 +200,22 @@ class LIPOIC(discord.Bot):
 
         async def getNewApply():
             await self._is_ready.wait()
-
-            async with sse_client.EventSource(
-                'https://lipoic.a102009102009.repl.co/dc-bot/new-apply',
-                headers={'Authorization': self.configs['newApplyServerToken']},
-                on_error=lambda e: self.log.error(e)
-            ) as event_source:
-                async for event in event_source:
-                    if event.type == 'start':
-                        self.dispatch('start_new_apply', event.data)
-                    elif event.type == 'new_apply':
-                        self.dispatch('new_apply', EventData(
-                            **json.loads(event.data)
-                        ))
+            try:
+                async with sse_client.EventSource(
+                    'https://lipoic.a102009102009.repl.co/dc-bot/new-apply',
+                    headers={
+                        'Authorization': self.configs['newApplyServerToken']},
+                    on_error=lambda e: self.log.error(e)
+                ) as event_source:
+                    async for event in event_source:
+                        if event.type == 'start':
+                            self.dispatch('start_new_apply', event.data)
+                        elif event.type == 'new_apply':
+                            self.dispatch('new_apply', EventData(
+                                **json.loads(event.data)
+                            ))
+            except Exception as e:
+                print(e)
 
         self.loop.create_task(getNewApply())
 
