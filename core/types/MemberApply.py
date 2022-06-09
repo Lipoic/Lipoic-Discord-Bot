@@ -1,4 +1,4 @@
-from typing import List, TypedDict, Literal, Text
+from typing import List, Type, Literal, Text
 
 jobsType = Literal[
     '美術 - 網站界面設計', '美術 - 海報、文宣設計', '美術 - 影音', '資訊 - 前端 (Vue.js)', '資訊 - 後端 (Rust)',
@@ -8,10 +8,14 @@ jobsType = Literal[
 identityType = Literal['學生', '教育工作者', '就職者']
 
 
-class EventData(TypedDict):
+class EventData(object):
     """
     job event data
     """
+
+    def __init__(self, **entries):
+        self.__dict__.update(entries)
+
     # email | 電子郵件
     email: Text
     # self introduction | 自介

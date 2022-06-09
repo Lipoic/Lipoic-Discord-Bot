@@ -1,6 +1,8 @@
 import json
 import platform
 from aiohttp_sse_client import client as sse_client
+from collections import namedtuple
+from core.types.MemberApply import EventData
 
 from main import __version__
 from typing import Any, Dict, List, Callable, Coroutine, Literal, Optional, Union
@@ -208,10 +210,9 @@ class LIPOIC(discord.Bot):
                     if event.type == 'start':
                         self.dispatch('start_new_apply', event.data)
                     elif event.type == 'new_apply':
-                        try:
-                            self.dispatch('new_apply', json.loads(event.data))
-                        except:
-                            self.dispatch('new_apply', event.data)
+                        self.dispatch('new_apply', EventData(
+                            **json.loads(event.data)
+                        ))
 
         self.loop.create_task(getNewApply())
 
