@@ -204,8 +204,8 @@ class LIPOIC(discord.Bot):
                 async with sse_client.EventSource(
                     'https://lipoic.a102009102009.repl.co/dc-bot/new-apply',
                     headers={
-                        'Authorization': self.configs['newApplyServerToken']},
-                    on_error=lambda e: self.log.error(e)
+                        'Authorization': self.configs['newApplyServerToken']
+                    },
                 ) as event_source:
                     async for event in event_source:
                         if event.type == 'start':
