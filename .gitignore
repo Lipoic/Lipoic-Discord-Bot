@@ -137,3 +137,5 @@ tokens.py
 /data/*.db-wal
 
 node_modules
+
+.clasp.json

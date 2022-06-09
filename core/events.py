@@ -28,7 +28,7 @@ class MainEventsCog(discord.Cog):
     # TODO watermelon watch this, new apply user event
     @discord.Cog.listener()
     async def on_new_apply(self, data: 'EventData'):
-        print(data)
+        print(data.email)
 
     # TODO watermelon watch this, link to the new apply server event
     @discord.Cog.listener()
