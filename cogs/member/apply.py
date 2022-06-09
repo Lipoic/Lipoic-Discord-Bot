@@ -1,13 +1,10 @@
-from typing import List
 import discord
 from discord import ChannelType, Embed
-from discord.ext import commands
 
 from typing import TYPE_CHECKING
 
 
 if TYPE_CHECKING:
-    from core.models import MemberType
     from core import LIPOIC
     from core.types.MemberApply import EventData
 
@@ -27,9 +24,8 @@ class MemberApplyCog(discord.Cog):
         embed.add_field(name="簡歷:", value=data.CV, inline=False)
         embed.add_field(name="加入原因:", value=data.reason, inline=False)
         embed.add_field(name="想法或願景:", value=data.thoughts, inline=False)
-        chinese_num = ["一", "二", "三"]
         embed.add_field(name="欲申請的職位:", value="\n".join([
-            f"第{chinese_num[index]}順位:```{job}```" for index,
+            f"第{['一', '二', '三'][index]}順位:```{job}```" for index,
             job in enumerate(data.jobs)
         ]), inline=False)
 
