@@ -35,4 +35,4 @@ class EventData(object):
     # time | 時間
     time: Text
     # id | id
-    ID: type[int]
+    ID: int
