@@ -1,7 +1,6 @@
 import json
 import platform
 from aiohttp_sse_client import client as sse_client
-from collections import namedtuple
 from core.types.MemberApply import EventData
 
 from main import __version__
@@ -206,6 +205,7 @@ class LIPOIC(discord.Bot):
                     headers={
                         'Authorization': self.configs['newApplyServerToken']
                     },
+                    on_error=lambda: print('error'),
                 ) as event_source:
                     async for event in event_source:
                         if event.type == 'start':

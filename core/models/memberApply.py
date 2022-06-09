@@ -11,7 +11,7 @@ class MemberApply(BaseModel):
     # thread_id
     thread_id = IntegerField(null=True, unique=True)
     # check code
-    code = TextField(null=True)
+    code = TextField()
     # jobs string list
     job = JSONField(default=lambda: [])
 
