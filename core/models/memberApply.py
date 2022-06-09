@@ -1,4 +1,4 @@
-from typing import List, TypedDict
+from typing import List, Optional, TypedDict
 
 from playhouse.sqlite_ext import IntegerField, TextField, JSONField
 
@@ -19,5 +19,5 @@ class MemberApply(BaseModel):
 class MemberApplyType(TypedDict):
     """Member Apply type"""
     thread_id: int
-    code: str
+    code: Optional[str]
     job: List[str]
