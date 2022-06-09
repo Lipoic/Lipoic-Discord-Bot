@@ -1,4 +1,4 @@
-from typing import List, Type, Literal, Text
+from typing import List, Literal, Text
 
 jobsType = Literal[
     '美術 - 網站界面設計', '美術 - 海報、文宣設計', '美術 - 影音', '資訊 - 前端 (Vue.js)', '資訊 - 後端 (Rust)',
@@ -34,3 +34,5 @@ class EventData(object):
     remark: Text
     # time | 時間
     time: Text
+    # id | id
+    ID: type[int]
