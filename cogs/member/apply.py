@@ -17,8 +17,10 @@ class MemberApplyCog(discord.Cog):
         self.bot = bot
 
     @discord.Cog.listener()
-    async def on_new_apply(self, data: EventData):
-        apply_channel: discord.TextChannel = self.bot.get_channel(984272090565849098)  # ID just for test
+    async def on_new_apply(self, data: 'EventData'):
+        apply_channel: discord.TextChannel = self.bot.get_channel(
+            984272090565849098  # ID just for test
+        )
         apply_message = f"""第{data.ID}號應徵者:
         自介:```
         {data.selfIntro}```
