@@ -35,7 +35,7 @@ app
       });
       const loop = setInterval(
         () => res.write(`event:check_link\ndata:check\n\n`),
-        1e3 * 60 * 2
+        3e4
       );
       req.on('close', () => clearInterval(loop));
     } else res.status(403).send('error');

@@ -214,6 +214,8 @@ class LIPOIC(discord.Bot):
                             self.dispatch('new_apply', EventData(
                                 **json.loads(event.data)
                             ))
+                        elif event.type == 'check':
+                            self.log.debug('check link')
             except Exception as e:
                 print(e)
 

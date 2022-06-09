@@ -10,6 +10,8 @@ class MemberApply(BaseModel):
 
     # thread_id
     thread_id = IntegerField(null=True, unique=True)
+    # email
+    email = TextField(null=True)
     # check code
     code = TextField()
     # jobs string list
@@ -18,6 +20,11 @@ class MemberApply(BaseModel):
 
 class MemberApplyType(TypedDict):
     """Member Apply type"""
+    # thread_id
     thread_id: int
+    # email
+    email: str
+    # check code
     code: Optional[str]
+    # jobs string list
     job: List[str]
