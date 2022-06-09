@@ -11,7 +11,7 @@ export const onFormSubmit = (
   const { namedValues, range } = event;
 
   const data = {
-    email: namedValues['電子郵件']?.shift(),
+    email: namedValues['電子郵件地址']?.shift(),
     selfIntro: namedValues['自我介紹']?.shift(),
     identity: namedValues['我目前的身份']?.shift(),
     CV: namedValues['我的簡歷 (經歷、作品等)']?.shift(),
