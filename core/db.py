@@ -5,13 +5,14 @@ from typing import TYPE_CHECKING, Dict
 
 if TYPE_CHECKING:
     from . import LIPOIC
-    from .models import BaseModel, DevMember, Dvc, Member
+    from .models import BaseModel, DevMember, Dvc, Member, MemberApply
 
 
 class DB:
     DevMember: 'DevMember'
     Dvc: 'Dvc'
     Member: 'Member'
+    MemberApply: 'MemberApply'
 
     def __init__(self, bot: 'LIPOIC'):
         self.bot = bot
