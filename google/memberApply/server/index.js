@@ -33,6 +33,11 @@ app
       app.on('new-apply', (data) => {
         res.write(`event:new_apply\ndata:${JSON.stringify(data)}\n\n`);
       });
+      const loop = setInterval(
+        () => res.write(`event:check_link\ndata:check\n\n`),
+        1e3 * 60 * 2
+      );
+      req.on('close', () => clearInterval(loop));
     } else res.status(403).send('error');
   });
 
