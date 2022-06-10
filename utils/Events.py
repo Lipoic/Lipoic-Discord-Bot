@@ -67,7 +67,7 @@ class Events:
         for event in self.extra_events.get(event_name, []):
             self._schedule_event(event, event_name, *args, **kwargs)
 
-    def _dispatch_class_event(self, event_name: str, *args: Any, **kwargs: Any):
+    def _dispatch_class_event(self, event_name: str, *args: Any, **kwargs: Any) -> None:
         if not self._call_class:
             return
 
