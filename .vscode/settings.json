@@ -1,6 +1,8 @@
 {
   "cSpell.words": [
     "bgcolor",
+    "Coro",
+    "hdrs",
     "LIPOIC",
     "pipenv"
   ],
@@ -12,7 +14,7 @@
     "--exclude=.git,__pycache__,build,dist",
     "--ignore=E722,F821,F401"
   ],
-  "commentTranslate.multiLineMerge": true,
+  "commentTranslate.multiLineMerge": false,
   "python.linting.flake8CategorySeverity.E": "Error",
   "python.linting.flake8CategorySeverity.F": "Hint",
   "python.linting.flake8CategorySeverity.W": "Warning",
