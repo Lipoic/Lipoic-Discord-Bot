@@ -17,6 +17,9 @@ class Events:
     def add_event_listener(self, func: CoroFunc, name: Optional[str] = None, once: bool = False) -> None:
         name = name or func.__name__
 
+        if not callable(func):
+            raise TypeError('func must be callable')
+
         if once:
             self.once(func, name)
             return
@@ -26,6 +29,27 @@ class Events:
         else:
             self.extra_events[name] = [func]
 
+    def on(self, func: CoroFunc, name: Optional[str] = None, once: bool = False) -> None:
+        self.add_event_listener(func, name, once)
+
+    def once(self, func: CoroFunc, name: Optional[str] = None) -> None:
+        def _remove_event_listener():
+            self.remove_event_listener(func, name)
+            self.remove_event_listener(_remove_event_listener, name)
+        self.add_event_listener(_remove_event_listener, name)
+        self.add_event_listener(func, name)
+
+    def event(self, func: CoroFunc) -> CoroFunc:
+        self.add_event_listener(self, func.__name__, func)
+        return func
+
+    def listen(self, name: Optional[str] = None, once: bool = False) -> Callable[[CoroFunc], CoroFunc]:
+        def decorator(func: CoroFunc) -> CoroFunc:
+            self.add_event_listener(func, name, once)
+            return func
+
+        return decorator
+
     def remove_event_listener(self, func: CoroFunc, name: Optional[str] = None) -> None:
         name = name or func.__name__
 
@@ -34,15 +58,6 @@ class Events:
                 self.extra_events[name].remove(func)
             except ValueError:
                 ...
-
-    def once(self, func: CoroFunc, name: Optional[str] = None) -> None:
-        self.add_event_listener(
-            lambda: self.remove_event_listener(func, name), name
-        )
-        self.add_event_listener(func, name)
-
-    def on(self, func: CoroFunc, name: Optional[str] = None) -> None:
-        self.add_event_listener(func, name)
 
     def emit(self, event_name: str, *args: Any, **kwargs: Any) -> None:
         self.dispatch(event_name, *args, **kwargs)
