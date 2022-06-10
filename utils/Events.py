@@ -8,10 +8,13 @@ CoroFunc = Callable[..., Any]
 
 
 class Events:
-    def __init__(self):
+    def __init__(self, call_class: bool = True, class_class_start: Optional[str] = None):
+        self._call_class = call_class
+        self._class_class_start = class_class_start or 'on_'
+
         self.extra_events: Dict[str, List[CoroFunc]] = {}
 
-    def add_event_listener(self, func: CoroFunc, name: Optional[str] = None, /, once: bool = False) -> None:
+    def add_event_listener(self, func: CoroFunc, name: Optional[str] = None, once: bool = False) -> None:
         name = name or func.__name__
 
         if once:
@@ -45,9 +48,22 @@ class Events:
         self.dispatch(event_name, *args, **kwargs)
 
     def dispatch(self, event_name: str, *args: Any, **kwargs: Any) -> None:
-        event_name = f'on_{event_name}'
+        self._dispatch_class_event(event, event_name, *args, **kwargs)
         for event in self.extra_events.get(event_name, []):
             self._schedule_event(event, event_name, *args, **kwargs)
+
+    def _dispatch_class_event(self, event_name: str, *args: Any, **kwargs: Any):
+        if not self._call_class:
+            return
+
+        method_name = self._class_class_start + event_name
+
+        try:
+            coro = getattr(self, method_name)
+        except AttributeError:
+            ...
+        else:
+            self._schedule_event(coro, method_name, *args, **kwargs)
 
     def _schedule_event(
         self,
