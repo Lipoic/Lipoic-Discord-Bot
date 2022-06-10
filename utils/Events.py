@@ -62,7 +62,7 @@ class Events:
                 name=f'{self.__class__.__name__}: {event_name}'
             )
             return
-        return self._run_event(coro, event_name, *args, **kwargs)
+        self._run_event(coro, event_name, *args, **kwargs)
 
     async def _run_async_event(
         self,
