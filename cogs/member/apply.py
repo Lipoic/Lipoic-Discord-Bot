@@ -1,5 +1,6 @@
 import discord
-from discord import ChannelType, Embed
+from discord import ChannelType, Embed, ButtonStyle, Interaction
+from discord.ui import View, Button
 
 from typing import TYPE_CHECKING
 
@@ -18,7 +19,7 @@ class MemberApplyCog(discord.Cog):
         apply_channel: discord.TextChannel = self.bot.get_channel(
             984272090565849098  # ID just for test
         )
-        embed = Embed(title=f"第{data.ID}號應徵者")
+        embed = Embed(title=f"第{data.ID}號應徵者", description=f"申請時間:\n`{data.time}`")
         embed.add_field(name="自介:", value=data.selfIntro, inline=False)
         embed.add_field(name="目前身分:", value=data.identity, inline=False)
         embed.add_field(name="簡歷:", value=data.CV, inline=False)
@@ -37,7 +38,19 @@ class MemberApplyCog(discord.Cog):
             type=ChannelType.public_thread,
             reason=f"編號#{data.ID}應徵申請"
         )
-        await apply_thread.send(embed=embed)
+
+        async def success_callback(interaction: Interaction):
+            interaction.response("申請成功")
+        success_button = Button(style=ButtonStyle.green, label="申請通過", custom_id="success")
+        success_button.callback = success_callback
+
+        async def fail_callback(interaction: Interaction):
+            interaction.response("申請失敗")
+        fail_button = Button(style=ButtonStyle.red, label="申請駁回", custom_id="fail")
+        fail_button.callback = fail_callback
+
+        view = View(success_button, fail_button, timeout=10)
+        await apply_thread.send(embed=embed, view=view)
 
         applyDb = self.bot.db.MemberApply
 
