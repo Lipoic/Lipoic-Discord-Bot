@@ -32,7 +32,6 @@ wss.on('connection', (ws) => {
   ws.on('message', (data) => {
     try {
       data = JSON.parse(data.toString());
-      console.log(data);
       if (data.op === 5 && data.authorization === process.env.CHECK_TOKEN) {
         ws.send(JSON.stringify({ type: 'START', op: 0 }));
         authorization = true;
@@ -48,7 +47,7 @@ wss.on('connection', (ws) => {
   });
 
   app.on('new-apply', (data) => {
-    ws.send(JSON.stringify({ type: 'new_apply', data }));
+    ws.send(JSON.stringify({ type: 'NEW_APPLY', data, op: 0 }));
   });
 
   const loop = setTimeout(() => !authorization && ws.close(), 1e3 * 60);

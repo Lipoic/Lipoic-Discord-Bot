@@ -1,4 +1,4 @@
-from typing import List, Text, Literal, Optional
+from typing import List, Text, Literal, Optional, NamedTuple
 
 jobsType = Literal[
     '美術 - 網站界面設計', '美術 - 海報、文宣設計', '美術 - 影音', '資訊 - 前端 (Vue.js)', '資訊 - 後端 (Rust)',
@@ -8,13 +8,10 @@ jobsType = Literal[
 identityType = Literal['學生', '教育工作者', '就職者']
 
 
-class EventData(object):
+class EventData(NamedTuple):
     """
     job event data
     """
-
-    def __init__(self, **entries):
-        self.__dict__.update(entries)
 
     # email | 電子郵件
     email: Text
