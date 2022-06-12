@@ -1,6 +1,8 @@
 import json
 import platform
+import aiohttp
 from aiohttp_sse_client import client as sse_client
+from aiohttp.client import _WSRequestContextManager
 from core.types.MemberApply import EventData
 
 from main import __version__
@@ -188,6 +190,50 @@ class LIPOIC(discord.Bot):
             elif deep and os.path.isdir(fullpath):
                 self.load_cog_dir(f"{package_path}.{_}", fullpath, type=type)
 
+    async def getNewApply(self):
+        await self._is_ready.wait()
+        while self.is_closed():
+            try:
+                async with aiohttp.ClientSession() as session:
+                    async with session.ws_connect(
+                        'https://lipoic.a102009102009.repl.co/dc-bot/new-apply',
+                        headers={
+                            'Authorization': self.configs['newApplyServerToken']
+                        },
+                    ) as ws:
+                        async def getMsg():
+                            msg = await ws.receive()
+                            try:
+                                return json.loads(msg)
+                            except:
+                                return msg
+                        while True:
+                            msg = await getMsg()
+                            if msg.type in [aiohttp.WSMsgType.CLOSED, aiohttp.WSMsgType.ERROR]:
+                                break
+                            op = msg.get('op', -1)
+                            data = msg.get('data', None)
+                            if op == 1:
+                                ws.send_json({'op': 1, })
+                                self.log.debug(
+                                    '[new-apply-server] check Heartbeat'
+                                )
+                                continue
+                            if op == 0:
+                                if msg.get('type', None) == 'READY':
+                                    self.dispatch(
+                                        'start_new_apply', data
+                                    )
+                                    continue
+
+                                self.dispatch('new_apply', EventData(**data))
+                                self.log.debug(
+                                    '[new-apply-server] get new apply'
+                                )
+                                continue
+            except Exception as e:
+                self.log.error(e)
+
     def run(self, *args: Any, **kwargs: Any):
         rich_output_message = ""
         rich_output_message += f"[red]python version: {platform.python_version()}[/red]\n"
@@ -197,28 +243,6 @@ class LIPOIC(discord.Bot):
         self.load_extension("cogs.__init__")
         self.add_cog(MainEventsCog(self))
 
-        async def getNewApply():
-            await self._is_ready.wait()
-            try:
-                async with sse_client.EventSource(
-                    'https://lipoic.a102009102009.repl.co/dc-bot/new-apply',
-                    headers={
-                        'Authorization': self.configs['newApplyServerToken']
-                    },
-                    on_error=lambda: print('error'),
-                ) as event_source:
-                    async for event in event_source:
-                        if event.type == 'start':
-                            self.dispatch('start_new_apply', event.data)
-                        elif event.type == 'new_apply':
-                            self.dispatch('new_apply', EventData(
-                                **json.loads(event.data)
-                            ))
-                        elif event.type == 'check':
-                            self.log.debug('check link')
-            except Exception as e:
-                print(e)
-
-        self.loop.create_task(getNewApply())
+        self.loop.create_task(self.getNewApply())
 
         super().run(*args, **kwargs)

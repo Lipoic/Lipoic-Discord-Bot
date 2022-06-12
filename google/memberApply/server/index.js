@@ -1,7 +1,9 @@
 import express from 'express';
 import bodyParser from 'body-parser';
+import { WebSocketServer } from 'ws';
 
-const app = express().use(bodyParser.json());
+const server = express().use(bodyParser.json());
+const wss = new WebSocketServer({ server });
 
 process
   .on('uncaughtException', (er) =>
@@ -11,36 +13,34 @@ process
     console.error(er.toString().slice(0, 1e4 * 20))
   );
 
-app
+server
   .get('/', (_req, res) => res.send('hello world'))
   .get('/uptimerobot', (_req, res) => res.send('check'));
 
-app
-  .post('/dc-bot/new-apply', (req, res) => {
-    if (req.headers.authorization === process.env.CHECK_TOKEN) {
-      app.emit('new-apply', req.body);
-      res.send('done');
-    } else res.status(403).send('error');
-  })
-  .get('/dc-bot/new-apply', (req, res) => {
-    if (req.headers.authorization === process.env.CHECK_TOKEN) {
-      res.set({
-        'Content-Type': 'text/event-stream',
-        'Cache-Control': 'no-cache',
-        Connection: 'keep-alive',
-      });
-      res.write('event:start\ndata:start\nretry:1000\n\n');
-      app.on('new-apply', (data) => {
-        res.write(`event:new_apply\ndata:${JSON.stringify(data)}\n\n`);
-      });
-      const loop = setInterval(
-        () => res.write(`event:check_link\ndata:check\n\n`),
-        3e4
-      );
-      req.on('close', () => clearInterval(loop));
-    } else res.status(403).send('error');
+server.post('/dc-bot/new-apply', (req, res) => {
+  if (req.headers.authorization === process.env.CHECK_TOKEN) {
+    server.emit('new-apply', req.body);
+    res.send('done');
+  } else res.status(403).send('error');
+});
+
+wss.on('connection', (ws, req) => {
+  if (req.headers.authorization !== process.env.CHECK_TOKEN) return ws.close();
+
+  ws.send(JSON.stringify({ type: 'READY', op: 0 }));
+
+  server.on('new-apply', (data) => {
+    ws.send(JSON.stringify({ type: 'new_apply', data: data }));
   });
 
-app.listen(3000, () => {
+  const loop = setInterval(
+    () => ws.send(JSON.stringify({ type: 'READY', op: 0 })),
+    3e4
+  );
+
+  ws.on('close', () => clearInterval(loop));
+});
+
+server.listen(3000, () => {
   console.log(`Example app listening on port ${3000}`);
 });
