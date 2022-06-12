@@ -225,13 +225,13 @@ class LIPOIC(discord.Bot):
                                 continue
                             if op == 0:
                                 if msgType == 'READY':
-                                    self.dispatch('start_new_apply')
-                                    continue
-                                if msgType == 'START':
                                     await ws.send_str(json.dumps({
                                         'op': 5,
                                         'authorization': self.configs['newApplyServerToken']
                                     }))
+                                    continue
+                                if msgType == 'START':
+                                    self.dispatch('start_new_apply')
                                     continue
 
                                 self.dispatch(

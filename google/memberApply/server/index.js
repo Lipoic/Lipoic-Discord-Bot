@@ -32,13 +32,14 @@ wss.on('connection', (ws) => {
   ws.on('message', (data) => {
     try {
       data = JSON.parse(data.toString());
+      console.log(data);
       if (data.op === 5 && data.authorization === process.env.CHECK_TOKEN) {
-        ws.send(JSON.stringify({ type: 'READY', op: 0 }));
+        ws.send(JSON.stringify({ type: 'START', op: 0 }));
         authorization = true;
       }
 
       const loop = setInterval(
-        () => ws.send(JSON.stringify({ type: 'check', op: 1 })),
+        () => ws.send(JSON.stringify({ type: 'CHECK', op: 1 })),
         3e4
       );
 
@@ -50,10 +51,7 @@ wss.on('connection', (ws) => {
     ws.send(JSON.stringify({ type: 'new_apply', data }));
   });
 
-  const loop = setTimeout(() => {
-    console.log(authorization);
-    !authorization && ws.close();
-  }, 1e3 * 60);
+  const loop = setTimeout(() => !authorization && ws.close(), 1e3 * 60);
   ws.on('close', () => clearTimeout(loop));
   ws.send(JSON.stringify({ type: 'READY', op: 0 }));
 });
