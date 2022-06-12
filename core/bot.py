@@ -192,41 +192,51 @@ class LIPOIC(discord.Bot):
 
     async def getNewApply(self):
         await self._is_ready.wait()
-        while self.is_closed():
+        while not self.is_closed():
             try:
                 async with aiohttp.ClientSession() as session:
                     async with session.ws_connect(
-                        'https://lipoic.a102009102009.repl.co/dc-bot/new-apply',
-                        headers={
-                            'Authorization': self.configs['newApplyServerToken']
-                        },
+                        'ws://lipoic.a102009102009.repl.co',
+                        timeout=30,
+                        autoclose=False,
+                        max_msg_size=0,
                     ) as ws:
                         async def getMsg():
-                            msg = await ws.receive()
+                            data = await ws.receive()
+                            msg = data.data
                             try:
-                                return json.loads(msg)
+                                msg = json.loads(msg)
                             except:
-                                return msg
+                                ...
+                            return (data.type, msg)
                         while True:
-                            msg = await getMsg()
-                            if msg.type in [aiohttp.WSMsgType.CLOSED, aiohttp.WSMsgType.ERROR]:
+                            _type, msg = await getMsg()
+
+                            if _type in [aiohttp.WSMsgType.CLOSED, aiohttp.WSMsgType.ERROR]:
                                 break
+                            if not isinstance(msg, dict):
+                                continue
                             op = msg.get('op', -1)
-                            data = msg.get('data', None)
+                            msgType = msg.get('type', None)
                             if op == 1:
-                                ws.send_json({'op': 1, })
                                 self.log.debug(
                                     '[new-apply-server] check Heartbeat'
                                 )
                                 continue
                             if op == 0:
-                                if msg.get('type', None) == 'READY':
-                                    self.dispatch(
-                                        'start_new_apply', data
-                                    )
+                                if msgType == 'READY':
+                                    self.dispatch('start_new_apply')
+                                    continue
+                                if msgType == 'START':
+                                    await ws.send_str(json.dumps({
+                                        'op': 5,
+                                        'authorization': self.configs['newApplyServerToken']
+                                    }))
                                     continue
 
-                                self.dispatch('new_apply', EventData(**data))
+                                self.dispatch(
+                                    'new_apply', EventData(**msg.get('data'))
+                                )
                                 self.log.debug(
                                     '[new-apply-server] get new apply'
                                 )

@@ -1,8 +1,11 @@
 import express from 'express';
 import bodyParser from 'body-parser';
 import { WebSocketServer } from 'ws';
+import cors from 'cors';
+import http from 'http';
 
-const server = express().use(bodyParser.json());
+const app = express().use(bodyParser.json()).use(cors());
+const server = http.createServer(app);
 const wss = new WebSocketServer({ server });
 
 process
@@ -13,32 +16,46 @@ process
     console.error(er.toString().slice(0, 1e4 * 20))
   );
 
-server
+app
   .get('/', (_req, res) => res.send('hello world'))
   .get('/uptimerobot', (_req, res) => res.send('check'));
 
-server.post('/dc-bot/new-apply', (req, res) => {
+app.post('/dc-bot/new-apply', (req, res) => {
   if (req.headers.authorization === process.env.CHECK_TOKEN) {
-    server.emit('new-apply', req.body);
+    app.emit('new-apply', req.body);
     res.send('done');
   } else res.status(403).send('error');
 });
 
-wss.on('connection', (ws, req) => {
-  if (req.headers.authorization !== process.env.CHECK_TOKEN) return ws.close();
+wss.on('connection', (ws) => {
+  let authorization = false;
+  ws.on('message', (data) => {
+    try {
+      data = JSON.parse(data.toString());
+      if (data.op === 5 && data.authorization === process.env.CHECK_TOKEN) {
+        ws.send(JSON.stringify({ type: 'READY', op: 0 }));
+        authorization = true;
+      }
 
-  ws.send(JSON.stringify({ type: 'READY', op: 0 }));
+      const loop = setInterval(
+        () => ws.send(JSON.stringify({ type: 'check', op: 1 })),
+        3e4
+      );
 
-  server.on('new-apply', (data) => {
-    ws.send(JSON.stringify({ type: 'new_apply', data: data }));
+      ws.on('close', () => clearInterval(loop));
+    } catch {}
   });
 
-  const loop = setInterval(
-    () => ws.send(JSON.stringify({ type: 'READY', op: 0 })),
-    3e4
-  );
+  app.on('new-apply', (data) => {
+    ws.send(JSON.stringify({ type: 'new_apply', data }));
+  });
 
-  ws.on('close', () => clearInterval(loop));
+  const loop = setTimeout(() => {
+    console.log(authorization);
+    !authorization && ws.close();
+  }, 1e3 * 60);
+  ws.on('close', () => clearTimeout(loop));
+  ws.send(JSON.stringify({ type: 'READY', op: 0 }));
 });
 
 server.listen(3000, () => {

@@ -32,8 +32,8 @@ class MainEventsCog(discord.Cog):
 
     # TODO watermelon watch this, link to the new apply server event
     @discord.Cog.listener()
-    async def on_start_new_apply(self, data: str):
-        print(data)
+    async def on_start_new_apply(self):
+        print('start')
 
     @discord.Cog.listener()
     async def on_application_command_error(self, ctx: discord.ApplicationContext, error: discord.DiscordException):
