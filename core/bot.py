@@ -218,7 +218,6 @@ class LIPOIC(discord.Bot):
                                 continue
                             op = msg.get('op', -1)
                             msgType = msg.get('type', None)
-                            print(msg)
                             if op == 1:
                                 self.log.debug(
                                     '[new-apply-server] check Heartbeat'
@@ -235,7 +234,6 @@ class LIPOIC(discord.Bot):
                                     self.dispatch('start_new_apply')
                                     continue
                                 if msgType == 'NEW_APPLY':
-                                    print(msg.get('data'))
                                     self.dispatch(
                                         'new_apply',
                                         EventData(**msg.get('data'))
