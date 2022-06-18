@@ -1,4 +1,5 @@
 import discord
+import random
 from discord import ChannelType, Embed, ButtonStyle, Interaction
 from discord.ui import View, Button
 
@@ -39,17 +40,36 @@ class MemberApplyCog(discord.Cog):
             reason=f"編號#{data.ID}應徵申請"
         )
 
-        async def success_callback(interaction: Interaction):
-            interaction.response("申請成功")
+        # async def success_callback(interaction: Interaction):
+        #     code_list = [chr(i) for i in range(65, 91)]
+        #     code_list.extend([chr(i) for i in range(97, 123)])
+        #     code_list.extend([str(i) for i in range(10)])
+
+        #     code_str = "".join(random.choices(code_list, k=4))
+        #     embed = Embed(title=f"申請成功，驗證碼:`{code_str}`")
+        #     await interaction.response.send_message(embed=embed)
+        async def button_callback(interaction: Interaction):
+            if interaction.custom_id == "success":
+                code_list = [chr(i) for i in range(65, 91)]
+                code_list.extend([chr(i) for i in range(97, 123)])
+                code_list.extend([str(i) for i in range(10)])
+
+                code_str = "".join(random.choices(code_list, k=4))
+                embed = Embed(title=f"申請成功，驗證碼:`{code_str}`")
+                await interaction.response.send_message(embed=embed)
+            else:
+                await interaction.response.send_message("申請失敗")
+
         success_button = Button(style=ButtonStyle.green, label="申請通過", custom_id="success")
-        success_button.callback = success_callback
+        success_button.callback = button_callback
 
-        async def fail_callback(interaction: Interaction):
-            interaction.response("申請失敗")
+        # async def fail_callback(interaction: Interaction):
+        #     interaction.response.send_message("申請失敗")
+
         fail_button = Button(style=ButtonStyle.red, label="申請駁回", custom_id="fail")
-        fail_button.callback = fail_callback
+        fail_button.callback = button_callback
 
-        view = View(success_button, fail_button, timeout=10)
+        view = View(success_button, fail_button, timeout=None)
         await apply_thread.send(embed=embed, view=view)
 
         applyDb = self.bot.db.MemberApply
