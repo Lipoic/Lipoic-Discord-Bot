@@ -1,9 +1,7 @@
 import json
 import platform
 import aiohttp
-from aiohttp_sse_client import client as sse_client
-from aiohttp.client import _WSRequestContextManager
-from core.types.MemberApply import EventData
+from .types.MemberApply import EventData
 
 from main import __version__
 from typing import Any, Dict, List, Callable, Coroutine, Literal, Optional, Union
