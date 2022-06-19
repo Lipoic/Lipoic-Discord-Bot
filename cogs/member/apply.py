@@ -4,6 +4,7 @@ from discord import ChannelType, Embed, ButtonStyle, Interaction
 from discord.ui import View, Button
 
 from typing import TYPE_CHECKING
+from string import ascii_letters, digits
 
 
 if TYPE_CHECKING:
@@ -39,32 +40,27 @@ class MemberApplyCog(discord.Cog):
             type=ChannelType.public_thread,
             reason=f"編號#{data.ID}應徵申請"
         )
+        applyDb = self.bot.db.MemberApply
 
-        # async def success_callback(interaction: Interaction):
-        #     code_list = [chr(i) for i in range(65, 91)]
-        #     code_list.extend([chr(i) for i in range(97, 123)])
-        #     code_list.extend([str(i) for i in range(10)])
-
-        #     code_str = "".join(random.choices(code_list, k=4))
-        #     embed = Embed(title=f"申請成功，驗證碼:`{code_str}`")
-        #     await interaction.response.send_message(embed=embed)
         async def button_callback(interaction: Interaction):
             if interaction.custom_id == "success":
-                code_list = [chr(i) for i in range(65, 91)]
-                code_list.extend([chr(i) for i in range(97, 123)])
-                code_list.extend([str(i) for i in range(10)])
+                code_str = "".join(random.sample(ascii_letters + digits, 6))
+                embed = Embed(
+                    title=f"申請成功，驗證碼:`{code_str}`",
+                    description=f"由{interaction.user.mention}所審核的申請"
+                )
+                await interaction.channel.send(embed=embed)
+                applyDb.update(code=code_str).where(applyDb.thread_id == interaction.channel_id).execute()
 
-                code_str = "".join(random.choices(code_list, k=4))
-                embed = Embed(title=f"申請成功，驗證碼:`{code_str}`")
-                await interaction.response.send_message(embed=embed)
             else:
-                await interaction.response.send_message("申請失敗")
+                embed = Embed(title="申請駁回", description=f"由{interaction.user.mention}所審核的申請")
+                await interaction.channel.send(embed=embed)
+
+            apply_button = Button(style=ButtonStyle.gray, label="面試已結束", disabled=True)
+            await interaction.response.edit_message(view=View(apply_button))
 
         success_button = Button(style=ButtonStyle.green, label="申請通過", custom_id="success")
         success_button.callback = button_callback
-
-        # async def fail_callback(interaction: Interaction):
-        #     interaction.response.send_message("申請失敗")
 
         fail_button = Button(style=ButtonStyle.red, label="申請駁回", custom_id="fail")
         fail_button.callback = button_callback
@@ -72,13 +68,11 @@ class MemberApplyCog(discord.Cog):
         view = View(success_button, fail_button, timeout=None)
         await apply_thread.send(embed=embed, view=view)
 
-        applyDb = self.bot.db.MemberApply
-
         applyDb.insert(
             thread_id=apply_thread.id,
             email=data.email,
             job=data.jobs
-        )
+        ).execute()
 
 
 def setup(bot):
