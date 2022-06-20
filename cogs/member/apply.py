@@ -1,6 +1,6 @@
 import discord
 import random
-from discord import ChannelType, Embed, ButtonStyle, Interaction
+from discord import ChannelType, Embed, ButtonStyle, Interaction, ApplicationContext, Option
 from discord.ui import View, Button
 
 from typing import TYPE_CHECKING
@@ -40,7 +40,7 @@ class MemberApplyCog(discord.Cog):
             type=ChannelType.public_thread,
             reason=f"編號#{data.ID}應徵申請"
         )
-        applyDb = self.bot.db.MemberApply
+        applyDB = self.bot.db.MemberApply
 
         async def button_callback(interaction: Interaction):
             if interaction.custom_id == "success":
@@ -50,8 +50,7 @@ class MemberApplyCog(discord.Cog):
                     description=f"由{interaction.user.mention}所審核的申請"
                 )
                 await interaction.channel.send(embed=embed)
-                applyDb.update(code=code_str).where(applyDb.thread_id == interaction.channel_id).execute()
-
+                applyDB.update(code=code_str).where(applyDB.thread_id == interaction.channel_id).execute()
             else:
                 embed = Embed(title="申請駁回", description=f"由{interaction.user.mention}所審核的申請")
                 await interaction.channel.send(embed=embed)
@@ -68,11 +67,30 @@ class MemberApplyCog(discord.Cog):
         view = View(success_button, fail_button, timeout=None)
         await apply_thread.send(embed=embed, view=view)
 
-        applyDb.insert(
+        applyDB.insert(
             thread_id=apply_thread.id,
             email=data.email,
             job=data.jobs
         ).execute()
+
+    @discord.slash_command(description="apply", guild_only=True)
+    async def apply(
+        self,
+        ctx: ApplicationContext,
+        code: Option(str, "申請驗證碼")
+    ):
+        applyDB = self.bot.db.MemberApply
+        apply = applyDB.get_or_none(applyDB.code == code)
+        if apply:
+            embed = Embed(
+                title=f"驗證成功!",
+                description=f"您所申請的職位為:" + "\n".join(
+                    f"```{job}```" for job in apply.job
+                ))
+        else:
+            embed = Embed(title="驗證失敗", description="未知的驗證碼，如有疑問，請洽人事組詢問", color=0xe74c3c)
+
+        await ctx.respond(embed=embed, ephemeral=True)
 
 
 def setup(bot):
