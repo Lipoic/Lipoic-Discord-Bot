@@ -16,6 +16,8 @@ class MemberApply(BaseModel):
     code = TextField()
     # jobs string list
     job = JSONField(default=lambda: [])
+    # TODO add annotation
+    apply_job = JSONField(default=lambda: [])
 
 
 class MemberApplyType(TypedDict):
@@ -28,3 +30,4 @@ class MemberApplyType(TypedDict):
     code: Optional[str]
     # jobs string list
     job: List[str]
+    apply_job: List[str]

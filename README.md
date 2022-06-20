@@ -2,7 +2,7 @@
 
 the bot of Lipoic official discord server
 
-# setup
+## setup
 
 ```sh
 pip install pipenv
@@ -10,15 +10,15 @@ pipenv install # or $ pipenv install --dev
 pipenv shell
 ```
 
-# run
+## run
 
-## pipenv
+### pipenv
 
 ```sh
 python main.py
 ```
 
-## docker
+### docker
 
 ```sh
 # build
