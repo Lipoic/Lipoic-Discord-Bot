@@ -56,12 +56,18 @@ class MemberApplyCog(discord.Cog):
                 select = jobs[int(interaction.data['values'][0])]
 
             async def button_callback(type: Literal['TRUE', 'FALSE', 'END'], interaction: Interaction):
+                apply: MemberApply = applyDB.get_or_none(
+                    applyDB.thread_id == interaction.channel_id
+                )
+
                 if type == "END":
                     if True in select_jobs.values():
                         code_str = ''.join(random.sample(
                             ascii_letters + digits, k=6
                         ))
-                        # TODO add check code write db
+
+                        apply.update(code=code_str).execute()
+
                         embed = Embed(
                             title=f"申請成功，驗證碼: `{code_str}`",
                             description=f"由 {', '.join([user.mention for user in allow_users])} 所審核的申請"
@@ -87,11 +93,7 @@ class MemberApplyCog(discord.Cog):
                     select_jobs[select] = type == 'TRUE'
                     await select_callback(interaction, select=select)
 
-                apply: MemberApply = applyDB.get_or_none(
-                    applyDB.thread_id == interaction.channel_id
-                )
-                apply.update(apply_status=select_jobs)
-                apply.save()
+                apply.update(apply_status=select_jobs).execute()
 
             job_button = Button(
                 style=ButtonStyle.gray,
