@@ -174,6 +174,7 @@ class MemberApplyCog(discord.Cog):
                     "```"
                 ])
             )
+            apply.update(code=None).execute()
         else:
             embed = Embed(
                 title="驗證失敗", description="未知的驗證碼，如有疑問，請洽人事組詢問", color=0xe74c3c
