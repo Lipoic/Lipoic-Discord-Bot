@@ -9,7 +9,7 @@ class MemberApply(BaseModel):
     """Member Apply model"""
 
     # thread_id
-    thread_id = IntegerField(null=True, unique=True)
+    thread_id = IntegerField(null=False, unique=True)
     # email
     email = TextField(null=False)
     # check code
