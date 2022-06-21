@@ -61,31 +61,35 @@ class MemberApplyCog(discord.Cog):
                 )
 
                 if type == "END":
+                    allow_user_str = ', '.join(
+                        [user.mention for user in allow_users])
                     if True in select_jobs.values():
-                        code_str = ''.join(random.sample(
-                            ascii_letters + digits, k=6
-                        ))
-
-                        apply.update(code=code_str).execute()
+                        code_str = self.bot.db.create_apply_member_check_code(
+                            interaction.channel_id
+                        )
 
                         embed = Embed(
                             title=f"申請成功，驗證碼: `{code_str}`",
-                            description=f"由 {', '.join([user.mention for user in allow_users])} 所審核的申請"
+                            description=f"由 {allow_user_str} 所審核的申請"
                         )
-                        await interaction.channel.send(embed=embed, mention_author=False)
                     else:
-                        await interaction.response.edit_message(
-                            embed=Embed(
-                                title="申請駁回",
-                                description=f"由{interaction.user.mention}所審核的申請"
-                            ),
-                            view=View(
-                                Button(
-                                    style=ButtonStyle.gray,
-                                    label="面試已結束", disabled=True
-                                )
+                        embed = Embed(
+                            title="申請駁回", description=f"由 {allow_user_str} 所審核的申請"
+                        )
+
+                    job_select.disabled = True
+                    job_select.placeholder = "審核職位紀錄"
+
+                    await interaction.response.edit_message(
+                        view=View(
+                            job_select,
+                            Button(
+                                style=ButtonStyle.gray,
+                                label="面試已結束", disabled=True
                             )
                         )
+                    )
+                    await interaction.channel.send(embed=embed)
 
                 else:
                     if interaction.user not in allow_users:

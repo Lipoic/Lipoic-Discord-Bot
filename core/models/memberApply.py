@@ -13,7 +13,7 @@ class MemberApply(BaseModel):
     # email
     email = TextField(null=False)
     # check code
-    code = TextField(null=True)
+    code = TextField(null=True, unique=True)
     # jobs string list
     job = JSONField(default=lambda: [])
     # TODO add annotation
