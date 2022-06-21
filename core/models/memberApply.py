@@ -9,14 +9,13 @@ class MemberApply(BaseModel):
     """Member Apply model"""
 
     # thread_id
-    thread_id = IntegerField(null=False, unique=True)
+    thread_id = IntegerField(null=False, unique=False)
     # email
     email = TextField(null=False)
     # check code
-    code = TextField(null=True, unique=True)
+    code = TextField(null=True)
     # jobs string list
     job = JSONField(default=lambda: [])
-    # TODO add annotation
     apply_status = JSONField(default=lambda: {})
 
 

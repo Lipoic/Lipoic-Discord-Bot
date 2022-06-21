@@ -45,11 +45,12 @@ class DB:
 
         def create_code():
             return ''.join(random.sample(ascii_letters + digits, k=6))
-        try:
-            code_str = create_code()
-            applyDB.get(
-                applyDB.thread_id == id
-            ).update(code=code_str).execute()
-        except peewee.IntegrityError:
-            return self.create_apply_member_check_code()
+        code_str = create_code()
+
+        check_code = applyDB.get_or_none(code=code_str)
+        if check_code:
+            return self.create_apply_member_check_code(id)
+
+        apply: MemberApply = applyDB.get_or_none(thread_id=id)
+        apply.update(code=code_str).execute()
         return code_str

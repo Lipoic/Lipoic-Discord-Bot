@@ -165,12 +165,15 @@ class MemberApplyCog(discord.Cog):
     ):
         applyDB = self.bot.db.MemberApply
         apply: MemberApply = applyDB.get_or_none(applyDB.code == code)
+
         if apply:
             embed = Embed(
                 title="驗證成功!",
                 description=''.join([
                     "您通過的身分為: ```",
-                    "\n".join(job for job in apply.job),
+                    "\n".join([
+                        k for k, v in dict(apply.apply_status).items() if v
+                    ]),
                     "```"
                 ])
             )
