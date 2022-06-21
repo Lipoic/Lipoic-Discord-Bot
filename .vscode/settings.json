@@ -18,5 +18,6 @@
   "python.linting.flake8CategorySeverity.E": "Error",
   "python.linting.flake8CategorySeverity.F": "Hint",
   "python.linting.flake8CategorySeverity.W": "Warning",
-  "python.linting.flake8Path": "flake8"
+  "python.linting.flake8Path": "flake8",
+  "editor.formatOnSave": true
 }
