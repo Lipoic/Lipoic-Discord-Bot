@@ -60,6 +60,8 @@ class MemberApplyCog(discord.Cog):
                     applyDB.thread_id == interaction.channel_id
                 )
 
+                if interaction.user not in allow_users:
+                    allow_users.append(interaction.user)
                 if type == "END":
                     allow_user_str = ', '.join(
                         [user.mention for user in allow_users])
@@ -67,15 +69,16 @@ class MemberApplyCog(discord.Cog):
                         code_str = self.bot.db.create_apply_member_check_code(
                             interaction.channel_id
                         )
-
                         embed = Embed(
                             title=f"申請成功，驗證碼: `{code_str}`",
                             description=f"由 {allow_user_str} 所審核的申請"
                         )
+                        await apply_thread.edit(name=f'✅{apply_thread.name}')
                     else:
                         embed = Embed(
                             title="申請駁回", description=f"由 {allow_user_str} 所審核的申請"
                         )
+                        await apply_thread.edit(name=f'❌{apply_thread.name}')
 
                     job_select.disabled = True
                     job_select.placeholder = "審核職位紀錄"
@@ -92,8 +95,6 @@ class MemberApplyCog(discord.Cog):
                     await interaction.channel.send(embed=embed)
 
                 else:
-                    if interaction.user not in allow_users:
-                        allow_users.append(interaction.user)
                     select_jobs[select] = type == 'TRUE'
                     await select_callback(interaction, select=select)
 
