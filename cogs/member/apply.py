@@ -73,12 +73,10 @@ class MemberApplyCog(discord.Cog):
                             title=f"申請成功，驗證碼: `{code_str}`",
                             description=f"由 {allow_user_str} 所審核的申請"
                         )
-                        await apply_thread.edit(name=f'✅{apply_thread.name}')
                     else:
                         embed = Embed(
                             title="申請駁回", description=f"由 {allow_user_str} 所審核的申請"
                         )
-                        await apply_thread.edit(name=f'❌{apply_thread.name}')
 
                     job_select.disabled = True
                     job_select.placeholder = "審核職位紀錄"
@@ -93,6 +91,11 @@ class MemberApplyCog(discord.Cog):
                         )
                     )
                     await interaction.channel.send(embed=embed)
+                    await apply_thread.edit(
+                        name=f"{'✅'if  True in select_jobs.values() else '❌'}{apply_thread.name}",
+                        archived=True,
+                        locked=True
+                    )
 
                 else:
                     select_jobs[select] = type == 'TRUE'
