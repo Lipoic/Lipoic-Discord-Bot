@@ -11,9 +11,9 @@ class MemberApply(BaseModel):
     # thread_id
     thread_id = IntegerField(null=True, unique=True)
     # email
-    email = TextField(null=True)
+    email = TextField(null=False)
     # check code
-    code = TextField()
+    code = TextField(null=True)
     # jobs string list
     job = JSONField(default=lambda: [])
     # TODO add annotation
