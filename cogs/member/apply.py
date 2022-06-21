@@ -47,6 +47,11 @@ class MemberApplyCog(discord.Cog):
             print(interaction.data)
             apply_status = list(interaction.custom_id)
             print(apply_status)
+
+            apply: MemberApply = applyDB.get_or_none(applyDB.thread_id == interaction.channel_id)
+            print(apply)
+            apply.apply_status[int(apply_status[0])] = apply_status[1]
+            apply.save()
             # if apply_status[1]:
             #     code_str = "".join(random.sample(ascii_letters + digits, 6))
             #     embed = Embed(
@@ -54,7 +59,7 @@ class MemberApplyCog(discord.Cog):
             #         description=f"由{interaction.user.mention}所審核的申請"
             #     )
             #     await interaction.channel.send(embed=embed)
-            #     applyDB.update(apply_job=apply_job).where(applyDB.thread_id == interaction.channel_id).execute()
+
             # else:
             #     embed = Embed(title="申請駁回", description=f"由{interaction.user.mention}所審核的申請")
             #     await interaction.channel.send(embed=embed)
@@ -62,11 +67,10 @@ class MemberApplyCog(discord.Cog):
             # apply_button = Button(style=ButtonStyle.gray, label="面試已結束", disabled=True)
             # await interaction.response.edit_message(view=View(apply_button))
 
-        # success_button = Button(style=ButtonStyle.green, label="申請通過", custom_id="success")
-        # success_button.callback = button_callback
-
-        # fail_button = Button(style=ButtonStyle.red, label="申請駁回", custom_id="fail")
-        # fail_button.callback = button_callback
+        async def end_button_callback(interaction: Interaction):
+            print(interaction.data)
+            apply_status = list(interaction.custom_id)
+            print(apply_status)
 
         async def select_callback(interaction: Interaction):
             print(interaction.data)
@@ -90,23 +94,30 @@ class MemberApplyCog(discord.Cog):
             apply: MemberApply = applyDB.get_or_none(applyDB.thread_id == interaction.channel_id)
             job_select = Select(
                 placeholder="請選擇要審核的職位",
-                options=[SelectOption(label=job) for job in apply.job.remove(interaction.data['values'][0])],
+                options=[
+                    SelectOption(label=job, value=str(index)) for index,
+                    job in enumerate(apply.job.remove(interaction.data['values'][0]))
+                ],
                 custom_id="job_select",
                 row=1
             )
+            job_select.callback = select_callback
             end_button = Button(
                 style=ButtonStyle.gray,
                 label="結束審核",
-                custom_id=f"{interaction.data['values'][0]}_fail"
+                custom_id="end_apply",
+                row=1
             )
-            fail_button.callback = button_callback
-            job_select.callback = select_callback
-            view = View(job_button, success_button, fail_button, job_select, timeout=None)
+            end_button.callback = end_button_callback
+            view = View(job_button, success_button, fail_button, job_select, end_button, timeout=None)
             await interaction.response.edit_message(view=view)
 
         job_select = Select(
             placeholder="請選擇要審核的職位",
-            options=[SelectOption(label=job) for job in data.jobs],
+            options=[
+                SelectOption(label=job, value=str(index)) for index,
+                job in enumerate(data.jobs)
+            ],
             custom_id="job_select"
         )
         job_select.callback = select_callback
@@ -131,7 +142,7 @@ class MemberApplyCog(discord.Cog):
             thread_id=apply_thread.id,
             email=data.email,
             job=data.jobs,
-            apply_job=[]
+            apply_status=[]
         ).execute()
 
     @discord.slash_command(description="apply", guild_only=True)
@@ -141,7 +152,7 @@ class MemberApplyCog(discord.Cog):
         code: Option(str, "申請驗證碼")
     ):
         applyDB = self.bot.db.MemberApply
-        apply = applyDB.get_or_none(applyDB.code == code)
+        apply: MemberApply = applyDB.get_or_none(applyDB.code == code)
         if apply:
             embed = Embed(
                 title=f"驗證成功!",
