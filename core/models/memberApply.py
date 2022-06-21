@@ -1,4 +1,4 @@
-from typing import List, Optional, TypedDict
+from typing import Dict, List, Optional, TypedDict
 
 from playhouse.sqlite_ext import IntegerField, TextField, JSONField
 
@@ -17,7 +17,7 @@ class MemberApply(BaseModel):
     # jobs string list
     job = JSONField(default=lambda: [])
     # TODO add annotation
-    apply_status = JSONField(default=lambda: [])
+    apply_status = JSONField(default=lambda: {})
 
 
 class MemberApplyType(TypedDict):
@@ -30,4 +30,4 @@ class MemberApplyType(TypedDict):
     code: Optional[str]
     # jobs string list
     job: List[str]
-    apply_status: List[bool]
+    apply_status: Dict[str, bool]
