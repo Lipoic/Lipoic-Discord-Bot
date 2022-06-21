@@ -9,11 +9,11 @@ class MemberApply(BaseModel):
     """Member Apply model"""
 
     # thread_id
-    thread_id = IntegerField(null=False, unique=False)
+    thread_id = IntegerField(null=False, unique=True)
     # email
     email = TextField(null=False)
     # check code
-    code = TextField(null=True)
+    code = TextField(null=True, unique=True)
     # jobs string list
     job = JSONField(default=lambda: [])
     apply_status = JSONField(default=lambda: {})
