@@ -99,7 +99,7 @@ class MemberApplyCog(discord.Cog):
 
                 else:
                     select_jobs[select] = type == 'TRUE'
-                    await select_callback(interaction, select=select)
+                    await select_callback(interaction, select=select, type=type)
 
                 apply.update(apply_status=select_jobs).execute()
 
@@ -109,14 +109,17 @@ class MemberApplyCog(discord.Cog):
                 disabled=True,
                 row=0
             )
+            type = kwargs.get('type', None)
             (success_button := Button(
                 style=ButtonStyle.green,
                 label="標示通過",
+                disabled=type == 'TRUE',
                 row=1
             )).callback = lambda x: button_callback('TRUE', x)
             (fail_button := Button(
                 style=ButtonStyle.red,
                 label="標示駁回",
+                disabled=type == 'FALSE',
                 row=1
             )).callback = lambda x: button_callback('FALSE', x)
             (job_select := Select(
