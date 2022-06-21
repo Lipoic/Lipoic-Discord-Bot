@@ -192,25 +192,6 @@ class MemberApplyCog(discord.Cog):
 
         await ctx.respond(embed=embed, ephemeral=True)
 
-    @discord.slash_command(description="test", guild_only=True)
-    async def test_apply(self, ctx: ApplicationContext):
-        self.bot.dispatch(
-            'new_apply',
-            EventData(
-                email='test@gmail.com',
-                selfIntro='test',
-                identity='test',
-                CV='test',
-                reason='test',
-                thoughts='test',
-                jobs=['美術 - 網站界面設計', '美術 - 網站界面設計2'],
-                time='100',
-                ID=100,
-                remark='test'
-            )
-        )
-        await ctx.respond('test')
-
 
 def setup(bot):
     bot.add_cog(MemberApplyCog(bot))
