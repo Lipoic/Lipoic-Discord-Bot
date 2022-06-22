@@ -78,12 +78,8 @@ class MemberApplyCog(discord.Cog):
                             title="申請駁回", description=f"由 {allow_user_str} 所審核的申請"
                         )
 
-                    job_select.disabled = True
-                    job_select.placeholder = "審核職位紀錄"
-
                     await interaction.response.edit_message(
                         view=View(
-                            job_select,
                             Button(
                                 style=ButtonStyle.gray,
                                 label="面試已結束", disabled=True
