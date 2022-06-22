@@ -102,25 +102,18 @@ class MemberApplyCog(discord.Cog):
                     await select_callback(interaction, select=select, type=type)
 
                 apply.update(apply_status=select_jobs).execute()
-
-            job_button = Button(
-                style=ButtonStyle.gray,
-                label=select,
-                disabled=True,
-                row=0
-            )
             type = kwargs.get('type', None)
             (success_button := Button(
                 style=ButtonStyle.green,
                 label="標示通過",
                 disabled=type == 'TRUE',
-                row=1
+                row=0
             )).callback = lambda x: button_callback('TRUE', x)
             (fail_button := Button(
                 style=ButtonStyle.red,
                 label="標示駁回",
                 disabled=type == 'FALSE',
-                row=1
+                row=0
             )).callback = lambda x: button_callback('FALSE', x)
             (job_select := Select(
                 placeholder="請選擇要審核的職位",
@@ -133,16 +126,16 @@ class MemberApplyCog(discord.Cog):
                         default=k is select
                     ) for i, k in enumerate(jobs)
                 ],
-                row=2
+                row=1
             )).callback = select_callback
             (end_button := Button(
                 style=ButtonStyle.gray,
                 label="結束審核",
-                row=3
+                row=2
             )).callback = lambda x: button_callback('END', x)
 
             await interaction.response.edit_message(view=View(
-                job_button, success_button, fail_button, end_button,
+                success_button, fail_button, end_button,
                 job_select, timeout=None
             ))
 
