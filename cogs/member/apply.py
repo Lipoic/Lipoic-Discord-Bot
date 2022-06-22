@@ -55,11 +55,14 @@ class MemberApplyCog(discord.Cog):
             if (select := kwargs.get('select', None)) is None and len(interaction.data['values']) > 0:
                 select = jobs[int(interaction.data['values'][0])]
 
-            async def button_callback(type: Literal['TRUE', 'FALSE', 'END'], interaction: Interaction):
+            async def button_callback(
+                type: Literal['TRUE', 'FALSE', 'END', 'NONE'],
+                stage_type: Literal['PASS', 'FAIL', 'NONE'],
+                interaction: Interaction
+            ):
                 apply: MemberApply = applyDB.get_or_none(
                     applyDB.thread_id == interaction.channel_id
                 )
-
                 if interaction.user not in allow_users:
                     allow_users.append(interaction.user)
                 if type == "END":
@@ -93,24 +96,40 @@ class MemberApplyCog(discord.Cog):
                         locked=True
                     )
 
+                elif stage_type != 'NONE':
+                    apply.update(
+                        apply_stage=apply.apply_stage + 1
+                    ).where(
+                        applyDB.thread_id == interaction.channel_id
+                    ).execute()
+                    await select_callback(
+                        interaction, select=select, type=type,
+                        stage_type='PASS' if stage_type != 'PASS' else 'FAIL'
+                    )
+
                 else:
                     select_jobs[select] = type == 'TRUE'
-                    await select_callback(interaction, select=select, type=type)
+                    await select_callback(interaction, select=select, stage_type=stage_type, type=type)
 
                 apply.update(apply_status=select_jobs).execute()
+
+            apply: MemberApply = applyDB.get_or_none(
+                applyDB.thread_id == interaction.channel_id
+            )
             type = kwargs.get('type', None)
+            stage_type = kwargs.get('stage_type', None)
             (success_button := Button(
                 style=ButtonStyle.green,
                 label="標示通過",
                 disabled=type == 'TRUE',
                 row=0
-            )).callback = lambda x: button_callback('TRUE', x)
+            )).callback = lambda x: button_callback('TRUE', 'NONE', x)
             (fail_button := Button(
                 style=ButtonStyle.red,
                 label="標示駁回",
                 disabled=type == 'FALSE',
                 row=0
-            )).callback = lambda x: button_callback('FALSE', x)
+            )).callback = lambda x: button_callback('FALSE', 'NONE', x)
             (job_select := Select(
                 placeholder="請選擇要審核的職位",
                 options=[
@@ -124,15 +143,43 @@ class MemberApplyCog(discord.Cog):
                 ],
                 row=1
             )).callback = select_callback
+            stage = apply.apply_stage
+            # apply_pass = True if apply.apply_stage > 0 and stage_type == 'PASS' else False
+            stage_button = Button(
+                style=ButtonStyle.gray,
+                label=(
+                    "人事一審" if stage == 0
+                    else f"組長{['二', '三', '四'][stage - 1]}審"
+                    if stage <= 4 or (stage > 0 and stage_type == 'PASS')
+                    else "組長已標示為通過"
+                ),
+                disabled=True,
+                row=2
+            )
+            (stage_success := Button(
+                style=ButtonStyle.green,
+                label="標示通過",
+                row=2
+            )).callback = lambda x: button_callback('NONE', 'PASS', x)
+            (stage_fail := Button(
+                style=ButtonStyle.red,
+                label="標示駁回",
+                row=2
+            )).callback = lambda x: button_callback('NONE', 'FAIL', x)
             (end_button := Button(
                 style=ButtonStyle.gray,
                 label="結束審核",
-                row=2
-            )).callback = lambda x: button_callback('END', x)
+                disabled=(
+                    False if apply.apply_stage > 0 and stage_type == 'PASS'
+                    else True
+                ),
+                row=3
+            )).callback = lambda x: button_callback('END', 'NONE', x)
 
             await interaction.response.edit_message(view=View(
-                success_button, fail_button, end_button,
-                job_select, timeout=None
+                success_button, fail_button,
+                stage_button, stage_success, stage_fail,
+                job_select, end_button, timeout=None
             ))
 
         (job_select := Select(
@@ -147,8 +194,8 @@ class MemberApplyCog(discord.Cog):
         applyDB.insert(
             thread_id=apply_thread.id,
             email=data.email,
-            job=jobs,
-            apply_status=[]
+            apply_status=select_jobs,
+            apply_stage=0
         ).execute()
 
         await apply_thread.send(embed=embed, view=View(job_select, timeout=None))

@@ -15,8 +15,9 @@ class MemberApply(BaseModel):
     # check code
     code = TextField(null=True)
     # jobs string list
-    job = JSONField(default=lambda: [])
     apply_status = JSONField(default=lambda: {})
+    # apply stage
+    apply_stage = IntegerField(null=False)
 
 
 class MemberApplyType(TypedDict):
@@ -28,5 +29,6 @@ class MemberApplyType(TypedDict):
     # check code
     code: Optional[str]
     # jobs string list
-    job: List[str]
     apply_status: Dict[str, bool]
+    # apply stage
+    apply_stage: int
