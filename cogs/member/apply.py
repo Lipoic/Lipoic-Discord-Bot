@@ -1,15 +1,14 @@
 import discord
-import random
 from discord import (
-    ChannelType, Embed, ButtonStyle, SelectOption,
+    ChannelType, Embed, ButtonStyle,
     Interaction, ApplicationContext, Option, TextChannel, User
 )
-from discord.ui import View, Button, Select
+from discord.ui import View, Button
 
-from typing import Dict, List, TYPE_CHECKING, Literal, Optional
-from string import ascii_letters, digits
-from core.types.MemberApply import EventData
+from typing import List, TYPE_CHECKING, Literal, Optional
 
+from utils.utils import ShallowData
+from core.types.MemberApply import jobsType, EventData
 
 if TYPE_CHECKING:
     from core import LIPOIC
@@ -24,8 +23,11 @@ class MemberApplyCog(discord.Cog):
     async def on_new_apply(self, data: EventData):
         applyDB = self.bot.db.MemberApply
         jobs = data.jobs
+
         allow_users: List[User] = []
-        select_jobs: Dict[str, Optional[bool]] = {k: None for k in data.jobs}
+        select_job: ShallowData[Optional[jobsType]] = ShallowData(None)
+        rank: ShallowData[Literal[1, 2, 3]] = ShallowData(0)
+
         apply_channel: TextChannel = self.bot.get_channel(
             984272090565849098  # ID just for test
         )
@@ -50,155 +52,55 @@ class MemberApplyCog(discord.Cog):
             type=ChannelType.public_thread,
             reason=f"編號#{data.ID}應徵申請"
         )
+        # applyDB.insert(
+        #     thread_id=apply_thread.id,
+        #     email=data.email,
+        # ).execute()
 
-        async def select_callback(interaction: Interaction, **kwargs: str):
-            if (select := kwargs.get('select', None)) is None and len(interaction.data['values']) > 0:
-                select = jobs[int(interaction.data['values'][0])]
+        stage_button = Button(
+            style=ButtonStyle.gray,
+            label='人事一審',
+            disabled=True,
+            row=0
+        )
 
-            async def button_callback(
-                type: Literal['TRUE', 'FALSE', 'END', 'NONE'],
-                stage_type: Literal['PASS', 'FAIL', 'NONE'],
-                interaction: Interaction
-            ):
-                apply: MemberApply = applyDB.get_or_none(
-                    applyDB.thread_id == interaction.channel_id
-                )
-                if interaction.user not in allow_users:
-                    allow_users.append(interaction.user)
-                if type == "END":
-                    allow_user_str = ', '.join(
-                        [user.mention for user in allow_users])
-                    if True in select_jobs.values():
-                        code_str = self.bot.db.create_apply_member_check_code(
-                            interaction.channel_id
-                        )
-                        embed = Embed(
-                            title=f"申請成功，驗證碼: `{code_str}`",
-                            description=f"由 {allow_user_str} 所審核的申請"
-                        )
-                    else:
-                        embed = Embed(
-                            title="申請駁回", description=f"由 {allow_user_str} 所審核的申請"
-                        )
+        (stage_success := Button(
+            style=ButtonStyle.green, label="通過", row=1
+        )).callback = lambda x: button_callback(x, 'PASS')
+        (stage_fail := Button(
+            style=ButtonStyle.red, label="駁回", row=1
+        )).callback = lambda x: button_callback(x, 'FAIL')
 
-                    await interaction.response.edit_message(
-                        view=View(
-                            Button(
-                                style=ButtonStyle.gray,
-                                label="面試已結束", disabled=True
-                            )
-                        )
-                    )
-                    await interaction.channel.send(embed=embed)
-                    await apply_thread.edit(
-                        name=f"{'✅'if  True in select_jobs.values() else '❌'}{apply_thread.name}",
-                        archived=True,
-                        locked=True
-                    )
-
-                elif stage_type != 'NONE':
-                    apply.update(
-                        apply_stage=apply.apply_stage + 1
-                    ).where(
-                        applyDB.thread_id == interaction.channel_id
-                    ).execute()
-                    await select_callback(
-                        interaction, select=select, type=type,
-                        stage_type='PASS' if stage_type != 'PASS' else 'FAIL'
-                    )
-
-                else:
-                    select_jobs[select] = type == 'TRUE'
-                    await select_callback(interaction, select=select, stage_type=stage_type, type=type)
-
-                apply.update(apply_status=select_jobs).execute()
-
-            apply: MemberApply = applyDB.get_or_none(
-                applyDB.thread_id == interaction.channel_id
-            )
-            type = kwargs.get('type', None)
-            stage_type = kwargs.get('stage_type', None)
-            (success_button := Button(
-                style=ButtonStyle.green,
-                label="標示通過",
-                disabled=type == 'TRUE',
-                row=0
-            )).callback = lambda x: button_callback('TRUE', 'NONE', x)
-            (fail_button := Button(
-                style=ButtonStyle.red,
-                label="標示駁回",
-                disabled=type == 'FALSE',
-                row=0
-            )).callback = lambda x: button_callback('FALSE', 'NONE', x)
-            (job_select := Select(
-                placeholder="請選擇要審核的職位",
-                options=[
-                    SelectOption(
-                        label=k, value=str(i),
-                        emoji='✅' if (
-                            v := select_jobs[k]
-                        ) else v if v is None else '❌',
-                        default=k is select
-                    ) for i, k in enumerate(jobs)
-                ],
-                row=1
-            )).callback = select_callback
-            stage = apply.apply_stage
-            # apply_pass = True if apply.apply_stage > 0 and stage_type == 'PASS' else False
-            stage_button = Button(
-                style=ButtonStyle.gray,
-                label=(
-                    "人事一審" if stage == 0
-                    else f"組長{['二', '三', '四'][stage - 1]}審"
-                    if stage <= 4 or (stage > 0 and stage_type == 'PASS')
-                    else "組長已標示為通過"
-                ),
-                disabled=True,
-                row=2
-            )
-            (stage_success := Button(
-                style=ButtonStyle.green,
-                label="標示通過",
-                row=2
-            )).callback = lambda x: button_callback('NONE', 'PASS', x)
-            (stage_fail := Button(
-                style=ButtonStyle.red,
-                label="標示駁回",
-                row=2
-            )).callback = lambda x: button_callback('NONE', 'FAIL', x)
-            (end_button := Button(
-                style=ButtonStyle.gray,
-                label="結束審核",
-                disabled=(
-                    False if apply.apply_stage > 0 and stage_type == 'PASS'
-                    else True
-                ),
-                row=3
-            )).callback = lambda x: button_callback('END', 'NONE', x)
-
-            await interaction.response.edit_message(view=View(
-                success_button, fail_button,
-                stage_button, stage_success, stage_fail,
-                job_select, end_button, timeout=None
+        async def close():
+            if select_job() is not None:
+                embed.clear_fields()
+                embed.add_field(name='通過職位', value=select_job(), inline=False)
+                embed.add_field(name='驗證碼', value='test_test', inline=False)
+                await apply_thread.send(embed=embed)
+            await message.edit(view=View(
+                Button(style=ButtonStyle.gray, label="面試已結束", disabled=True)
             ))
+            await apply_thread.edit(
+                name=f"{'✅' if select_job() else '❌'} {apply_thread.name}",
+                archived=True, locked=True
+            )
 
-        (job_select := Select(
-            placeholder="請選擇要審核的職位",
-            options=[
-                SelectOption(label=job, value=str(index)) for index,
-                job in enumerate(jobs)
-            ],
-            custom_id="job_select"
-        )).callback = select_callback
+        async def button_callback(interaction: Interaction, type: Literal['PASS', 'FAIL']):
+            if interaction.user not in allow_users:
+                allow_users.append(interaction.user)
 
-        applyDB.insert(
-            thread_id=apply_thread.id,
-            email=data.email,
-            apply_status=select_jobs,
-            apply_stage=0
-        ).execute()
+            if rank != 0 and type == 'PASS':
+                select_job.data = jobs[rank() - 1]
 
-        await apply_thread.send(embed=embed, view=View(job_select, timeout=None))
+            if rank == len(jobs) or select_job() is not None:
+                return await close()
+
+            rank.data += 1
+            stage_button.label = f'組長二審-{jobs[rank() - 1]}'
+
+            await interaction.response.edit_message(view=View(stage_button, stage_success, stage_fail, timeout=None))
+
+        message = await apply_thread.send(embed=embed, view=View(stage_button, stage_success, stage_fail, timeout=None))
 
     @discord.slash_command(description="apply", guild_only=True)
     async def apply(
@@ -227,6 +129,25 @@ class MemberApplyCog(discord.Cog):
             )
 
         await ctx.respond(embed=embed, ephemeral=True)
+
+    @discord.slash_command(description="test", guild_only=True)
+    async def test_apply(self, ctx: ApplicationContext):
+        self.bot.dispatch(
+            'new_apply',
+            EventData(
+                email='test@gmail.com',
+                selfIntro='test',
+                identity='test',
+                CV='test',
+                reason='test',
+                thoughts='test',
+                jobs=['美術 - 網站界面設計', '美術 - 網站界面設計2'],
+                time='100',
+                ID=100,
+                remark='test'
+            )
+        )
+        await ctx.respond('test')
 
 
 def setup(bot):
