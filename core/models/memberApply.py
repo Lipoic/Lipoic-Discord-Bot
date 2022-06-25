@@ -27,4 +27,4 @@ class MemberApplyType(TypedDict):
     # job verify code
     code: Optional[str]
     # job that has been passed
-    apply_stage: str
+    pass_job: Optional[str]
