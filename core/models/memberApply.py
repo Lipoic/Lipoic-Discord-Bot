@@ -8,27 +8,23 @@ from . import BaseModel
 class MemberApply(BaseModel):
     """Member Apply model"""
 
-    # thread_id
+    # thread ID
     thread_id = IntegerField(null=False, unique=True)
     # email
     email = TextField(null=False)
-    # check code
+    # job verify code
     code = TextField(null=True)
-    # jobs string list
-    apply_status = JSONField(default=lambda: {})
-    # apply stage
-    apply_stage = IntegerField(null=False)
+    # job that has been passed
+    pass_job = TextField(null=True)
 
 
 class MemberApplyType(TypedDict):
     """Member Apply type"""
-    # thread_id
+    # thread ID
     thread_id: int
     # email
     email: str
-    # check code
+    # job verify code
     code: Optional[str]
-    # jobs string list
-    apply_status: Dict[str, bool]
-    # apply stage
-    apply_stage: int
+    # job that has been passed
+    apply_stage: str
