@@ -92,11 +92,11 @@ class MemberApplyCog(discord.Cog):
             if rank != 0 and type == 'PASS':
                 select_job.data = jobs[rank() - 1]
 
-            if rank == len(jobs) or select_job() is not None:
+            if rank == len(jobs) or select_job() is not None or (rank == 0 and type == 'FAIL'):
                 return await close()
 
             rank.data += 1
-            stage_button.label = f'組長二審-{jobs[rank() - 1]}'
+            stage_button.label = f'組長二審: {jobs[rank() - 1]}'
 
             await interaction.response.edit_message(view=View(stage_button, stage_success, stage_fail, timeout=None))
 
@@ -129,25 +129,6 @@ class MemberApplyCog(discord.Cog):
             )
 
         await ctx.respond(embed=embed, ephemeral=True)
-
-    @discord.slash_command(description="test", guild_only=True)
-    async def test_apply(self, ctx: ApplicationContext):
-        self.bot.dispatch(
-            'new_apply',
-            EventData(
-                email='test@gmail.com',
-                selfIntro='test',
-                identity='test',
-                CV='test',
-                reason='test',
-                thoughts='test',
-                jobs=['美術 - 網站界面設計', '美術 - 網站界面設計2'],
-                time='100',
-                ID=100,
-                remark='test'
-            )
-        )
-        await ctx.respond('test')
 
 
 def setup(bot):
