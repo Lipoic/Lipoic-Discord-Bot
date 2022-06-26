@@ -3,7 +3,6 @@ import os
 import pathlib
 from typing import Literal, Union
 
-import discord
 
 localesType = Literal["en-US", "zh-CN", "zh-TW"]
 defaultLocale = "zh-TW"

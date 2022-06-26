@@ -1,4 +1,6 @@
-
+import peewee
+import random
+from string import ascii_letters, digits
 from .models import DATABASE, getModels
 
 from typing import TYPE_CHECKING, Dict
@@ -37,3 +39,15 @@ class DB:
     def load_models(self):
         for model in dict.values(self._models):
             setattr(self, model.__name__, model)
+
+    def create_apply_member_check_code(self, id: str):
+        applyDB = self.MemberApply
+
+        code_str = ''.join(random.sample(ascii_letters + digits, k=6))
+
+        if applyDB.get_or_none(applyDB.code == code_str):
+            return self.create_apply_member_check_code(id)
+
+        applyDB.update(code=code_str).where(applyDB.thread_id == id).execute()
+
+        return code_str

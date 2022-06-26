@@ -9,6 +9,19 @@ from .member import Member, MemberType
 from .dvc import Dvc, DvcType
 from .memberApply import MemberApply, MemberApplyType
 
+__all__ = [
+    'BaseModel',
+    'DATABASE',
+    'DevMember',
+    'DevMemberType',
+    'Member',
+    'MemberType',
+    'Dvc',
+    'DvcType',
+    'MemberApply',
+    'MemberApplyType',
+]
+
 
 def getModels() -> Dict[str, BaseModel]:
     modelsList: List[BaseModel] = [

@@ -1,4 +1,7 @@
+import json
 import platform
+import aiohttp
+from .types.MemberApply import EventData
 
 from main import __version__
 from typing import Any, Dict, List, Callable, Coroutine, Literal, Optional, Union
@@ -38,6 +41,9 @@ class LIPOIC(discord.Bot):
         self.db.connect()
         self._uptime = None
         self.dev_user_ids: List[int] = set(kwargs.get("dev_user_ids", set()))
+        self.configs = {
+            'newApplyServerToken': os.getenv('NEW_APPLY_SERVER_TOKEN'),
+        }
 
         # dynamic voice channel ID
         self.dvc_ids: List[int] = [977050757461336124]
@@ -104,7 +110,7 @@ class LIPOIC(discord.Bot):
         discord.User
             The user you requested.
         """
-        if (user := self.get_user(int(user_id))) is not None:
+        if (user := self.get_user(user_id := int(user_id))) is not None:
             return user
         return await self.fetch_user(user_id)
 
@@ -127,13 +133,13 @@ class LIPOIC(discord.Bot):
         discord.User
             The user you requested.
         """
-        if (member := guild.get_member(int(member_id))) is not None:
+        if (member := guild.get_member(member_id := int(member_id))) is not None:
             return member
         return await guild.fetch_member(guild, member_id)
 
     async def get_or_fetch_channel(self, channel_id: Union[int, str]):
-        if (member := self.get_channel(int(channel_id))) is not None:
-            return member
+        if (channel := self.get_channel(channel_id := int(channel_id))) is not None:
+            return channel
         return await self.fetch_channel(channel_id)
 
     async def is_owner(self, user: Union[discord.User, discord.Member], /) -> bool:
@@ -182,6 +188,61 @@ class LIPOIC(discord.Bot):
             elif deep and os.path.isdir(fullpath):
                 self.load_cog_dir(f"{package_path}.{_}", fullpath, type=type)
 
+    async def getNewApply(self):
+        await self._is_ready.wait()
+        while not self.is_closed():
+            try:
+                async with aiohttp.ClientSession() as session:
+                    async with session.ws_connect(
+                        'ws://lipoic.a102009102009.repl.co',
+                        timeout=30,
+                        autoclose=False,
+                        max_msg_size=0,
+                    ) as ws:
+                        async def getMsg():
+                            data = await ws.receive()
+                            msg = data.data
+                            try:
+                                msg = json.loads(msg)
+                            except:
+                                ...
+                            return (data.type, msg)
+                        while True:
+                            _type, msg = await getMsg()
+
+                            if _type in [aiohttp.WSMsgType.CLOSED, aiohttp.WSMsgType.ERROR]:
+                                break
+                            if not isinstance(msg, dict):
+                                continue
+                            op = msg.get('op', -1)
+                            msgType = msg.get('type', None)
+                            if op == 1:
+                                self.log.debug(
+                                    '[new-apply-server] check Heartbeat'
+                                )
+                                continue
+                            if op == 0:
+                                if msgType == 'READY':
+                                    await ws.send_str(json.dumps({
+                                        'op': 5,
+                                        'authorization': self.configs['newApplyServerToken']
+                                    }))
+                                    continue
+                                if msgType == 'START':
+                                    self.dispatch('start_new_apply')
+                                    continue
+                                if msgType == 'NEW_APPLY':
+                                    self.dispatch(
+                                        'new_apply',
+                                        EventData(**msg.get('data'))
+                                    )
+                                    self.log.debug(
+                                        '[new-apply-server] get new apply'
+                                    )
+                                    continue
+            except Exception as e:
+                self.log.error(e)
+
     def run(self, *args: Any, **kwargs: Any):
         rich_output_message = ""
         rich_output_message += f"[red]python version: {platform.python_version()}[/red]\n"
@@ -190,4 +251,7 @@ class LIPOIC(discord.Bot):
 
         self.load_extension("cogs.__init__")
         self.add_cog(MainEventsCog(self))
+
+        self.loop.create_task(self.getNewApply())
+
         super().run(*args, **kwargs)

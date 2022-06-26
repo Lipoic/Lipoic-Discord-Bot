@@ -1,6 +1,8 @@
 {
   "cSpell.words": [
     "bgcolor",
+    "Coro",
+    "hdrs",
     "LIPOIC",
     "pipenv"
   ],
@@ -8,13 +10,15 @@
   "python.linting.flake8Enabled": true,
   "python.linting.flake8Args": [
     "--max-line-length=120",
-    "--ignore=E402,F841,F401,E302,E305,W503",
+    "--ignore=E402,F841,F401,E302,E305,W503,E722,F821",
     "--exclude=.git,__pycache__,build,dist",
-    "--ignore=E722,F821,F401"
+    "--per-file-ignores=__init__.py:F403",
+
   ],
-  "commentTranslate.multiLineMerge": true,
+  "commentTranslate.multiLineMerge": false,
   "python.linting.flake8CategorySeverity.E": "Error",
   "python.linting.flake8CategorySeverity.F": "Hint",
   "python.linting.flake8CategorySeverity.W": "Warning",
-  "python.linting.flake8Path": "flake8"
+  "python.linting.flake8Path": "flake8",
+  "editor.formatOnSave": true
 }
