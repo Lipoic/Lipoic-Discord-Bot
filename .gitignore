@@ -136,6 +136,4 @@ tokens.py
 /data/*.db-shm
 /data/*.db-wal
 
-node_modules
-
 .clasp.json
