@@ -63,8 +63,13 @@ class MemberApplyCog(discord.Cog):
     ):
         applyDB = self.bot.db.MemberApply
         apply: MemberApply = applyDB.get_or_none(applyDB.code == code)
-
         if apply:
+            job_roles = {
+                '美術': 990534021207445524,
+                '資訊': 990533947303813210
+            }  # roles ID just for test
+            role = ctx.guild.get_role(job_roles[apply.pass_job[0:2]])
+            await ctx.author.add_roles(role)
             embed = Embed(
                 title="驗證成功!",
                 description=f"您通過的身分為:```{apply.pass_job}```"
