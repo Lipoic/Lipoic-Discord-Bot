@@ -147,9 +147,9 @@ class ApplyView(View):
                 embed.add_field(name='審核人員', value=', '.join([
                     f'<@{user}>' for user in allow_users
                 ]), inline=False)
-                embed.add_field(name='通過職位', value=select_job, inline=False)
+                embed.add_field(name='Email', value=data.email, inline=False)
+                embed.add_field(name='通過職位', value=f'```{select_job}```', inline=False)
                 embed.add_field(name='驗證碼', value=f'`{code}`', inline=False)
-                embed.add_field(name='email', value=data.email, inline=False)
                 await channel.send(embed=embed)
             return await channel.edit(
                 name=f"{'✅' if rank != 0 else '❌'} {channel.name}",
@@ -161,7 +161,9 @@ class ApplyView(View):
         ).where(applyDB.thread_id == channel_id).execute()
 
         (stage_button := self.stage_button).label = f'組長二審: {jobs[rank]}'
-
+        await interaction.channel.edit(
+            name=f"編號 {data.ID} | 申請 {jobs[rank]}"
+        )
         await interaction.response.edit_message(view=View(
             stage_button, self.stage_success, self.stage_fail,
             timeout=None
