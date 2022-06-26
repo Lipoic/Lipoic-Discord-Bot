@@ -129,11 +129,13 @@ class ApplyView(View):
         if (user_id := str(interaction.user.id)) not in allow_users:
             allow_users.append(user_id)
 
-        if (rank == 0 and _type == 'FAIL') or (rank != 0 and _type == 'PASS'):
+        if (rank == 0 and _type == 'FAIL') or (rank != 0 and _type == 'PASS') or (
+            rank == len(jobs) and _type == 'FAIL'
+        ):
             await message.edit(view=View(
                 Button(style=ButtonStyle.gray, label="面試已結束", disabled=True)
             ))
-            if rank != 0:
+            if (state := rank != 0 and _type == 'PASS'):
                 select_job = jobs[rank - 1]
                 applyDB.update(pass_job=select_job).where(
                     applyDB.thread_id == channel_id
@@ -148,11 +150,12 @@ class ApplyView(View):
                     f'<@{user}>' for user in allow_users
                 ]), inline=False)
                 embed.add_field(name='Email', value=data.email, inline=False)
-                embed.add_field(name='通過職位', value=f'```{select_job}```', inline=False)
+                embed.add_field(
+                    name='通過職位', value=f'```{select_job}```', inline=False)
                 embed.add_field(name='驗證碼', value=f'`{code}`', inline=False)
                 await channel.send(embed=embed)
             return await channel.edit(
-                name=f"{'✅' if rank != 0 else '❌'} {channel.name}",
+                name=f"{'✅' if state else '❌'} {channel.name}",
                 archived=True, locked=True
             )
 
