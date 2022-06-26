@@ -125,7 +125,8 @@ class ApplyView(View):
             str(_.id if (_ := self.bot.get_user(id)) else id) for id in allow_users.split(',') if id
         ]
         message = self.bot.get_message(int(message_id))
-
+        if not message:
+            message = await channel.fetch_message(int(message_id))
         if (user_id := str(interaction.user.id)) not in allow_users:
             allow_users.append(user_id)
 
