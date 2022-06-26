@@ -1,6 +1,9 @@
-from typing import Dict, List, Optional, TypedDict
+from typing import Optional, TypedDict, TYPE_CHECKING
 
 from playhouse.sqlite_ext import IntegerField, TextField, JSONField
+
+if TYPE_CHECKING:
+    from core.types.MemberApply import jobsType, EventData
 
 from . import BaseModel
 
@@ -16,6 +19,10 @@ class MemberApply(BaseModel):
     code = TextField(null=True)
     # job that has been passed
     pass_job = TextField(null=True)
+    # state ram ( '{message_id}-{rank}-{allow_user}' )
+    state = TextField(null=False)
+    # data
+    data = JSONField(default=lambda: {})
 
 
 class MemberApplyType(TypedDict):
@@ -27,4 +34,8 @@ class MemberApplyType(TypedDict):
     # job verify code
     code: Optional[str]
     # job that has been passed
-    pass_job: Optional[str]
+    pass_job: Optional['jobsType']
+    # state ram ( '{rank}-{allow_user}' )
+    state: str
+    # data
+    data: 'EventData'

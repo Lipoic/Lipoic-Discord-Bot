@@ -43,15 +43,11 @@ class DB:
     def create_apply_member_check_code(self, id: str):
         applyDB = self.MemberApply
 
-        def create_code():
-            return ''.join(random.sample(ascii_letters + digits, k=6))
-        code_str = create_code()
+        code_str = ''.join(random.sample(ascii_letters + digits, k=6))
 
-        check_code = applyDB.get_or_none(applyDB.code == code_str)
-        if check_code:
+        if applyDB.get_or_none(applyDB.code == code_str):
             return self.create_apply_member_check_code(id)
 
-        apply: MemberApply = applyDB.get_or_none(applyDB.thread_id == id)
-        apply.update(code=code_str).execute()
+        applyDB.update(code=code_str).where(applyDB.thread_id == id).execute()
 
         return code_str

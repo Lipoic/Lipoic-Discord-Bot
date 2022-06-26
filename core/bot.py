@@ -110,7 +110,7 @@ class LIPOIC(discord.Bot):
         discord.User
             The user you requested.
         """
-        if (user := self.get_user(int(user_id))) is not None:
+        if (user := self.get_user(user_id := int(user_id))) is not None:
             return user
         return await self.fetch_user(user_id)
 
@@ -133,13 +133,13 @@ class LIPOIC(discord.Bot):
         discord.User
             The user you requested.
         """
-        if (member := guild.get_member(int(member_id))) is not None:
+        if (member := guild.get_member(member_id := int(member_id))) is not None:
             return member
         return await guild.fetch_member(guild, member_id)
 
     async def get_or_fetch_channel(self, channel_id: Union[int, str]):
-        if (member := self.get_channel(int(channel_id))) is not None:
-            return member
+        if (channel := self.get_channel(channel_id := int(channel_id))) is not None:
+            return channel
         return await self.fetch_channel(channel_id)
 
     async def is_owner(self, user: Union[discord.User, discord.Member], /) -> bool:

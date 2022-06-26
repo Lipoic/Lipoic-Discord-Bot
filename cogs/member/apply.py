@@ -1,9 +1,10 @@
+import inspect
 import discord
 from discord import (
     ChannelType, Embed, ButtonStyle,
-    Interaction, ApplicationContext, Option, TextChannel, User
+    Interaction, ApplicationContext, Option, TextChannel, User, ui
 )
-from discord.ui import View, Button
+from discord.ui import View, Button, Item
 
 from typing import List, TYPE_CHECKING, Literal, Optional
 
@@ -24,12 +25,8 @@ class MemberApplyCog(discord.Cog):
         applyDB = self.bot.db.MemberApply
         jobs = data.jobs
 
-        allow_users: List[User] = []
-        select_job: ShallowData[Optional[jobsType]] = ShallowData(None)
-        rank: ShallowData[Literal[1, 2, 3]] = ShallowData(0)
-
         apply_channel: TextChannel = self.bot.get_channel(
-            984272090565849098  # ID just for test
+            990449282190553089  # ID just for test
         )
         embed = discord.Embed(
             title=f"第{data.ID}號應徵者", description=f"申請時間:\n`{data.time}`"
@@ -52,55 +49,12 @@ class MemberApplyCog(discord.Cog):
             type=ChannelType.public_thread,
             reason=f"編號#{data.ID}應徵申請"
         )
-        # applyDB.insert(
-        #     thread_id=apply_thread.id,
-        #     email=data.email,
-        # ).execute()
 
-        stage_button = Button(
-            style=ButtonStyle.gray,
-            label='人事一審',
-            disabled=True,
-            row=0
-        )
+        message = await apply_thread.send(embed=embed, view=ApplyView(self.bot))
 
-        (stage_success := Button(
-            style=ButtonStyle.green, label="通過", row=1
-        )).callback = lambda x: button_callback(x, 'PASS')
-        (stage_fail := Button(
-            style=ButtonStyle.red, label="駁回", row=1
-        )).callback = lambda x: button_callback(x, 'FAIL')
-
-        async def close():
-            if select_job() is not None:
-                embed.clear_fields()
-                embed.add_field(name='通過職位', value=select_job(), inline=False)
-                embed.add_field(name='驗證碼', value='test_test', inline=False)
-                await apply_thread.send(embed=embed)
-            await message.edit(view=View(
-                Button(style=ButtonStyle.gray, label="面試已結束", disabled=True)
-            ))
-            await apply_thread.edit(
-                name=f"{'✅' if select_job() else '❌'} {apply_thread.name}",
-                archived=True, locked=True
-            )
-
-        async def button_callback(interaction: Interaction, type: Literal['PASS', 'FAIL']):
-            if interaction.user not in allow_users:
-                allow_users.append(interaction.user)
-
-            if rank != 0 and type == 'PASS':
-                select_job.data = jobs[rank() - 1]
-
-            if rank == len(jobs) or select_job() is not None or (rank == 0 and type == 'FAIL'):
-                return await close()
-
-            rank.data += 1
-            stage_button.label = f'組長二審: {jobs[rank() - 1]}'
-
-            await interaction.response.edit_message(view=View(stage_button, stage_success, stage_fail, timeout=None))
-
-        message = await apply_thread.send(embed=embed, view=View(stage_button, stage_success, stage_fail, timeout=None))
+        applyDB.insert(
+            thread_id=apply_thread.id, email=data.email, state=f'{message.id}-0-', data=data._asdict()
+        ).execute()
 
     @discord.slash_command(description="apply", guild_only=True)
     async def apply(
@@ -114,21 +68,132 @@ class MemberApplyCog(discord.Cog):
         if apply:
             embed = Embed(
                 title="驗證成功!",
-                description=''.join([
-                    "您通過的身分為: ```",
-                    "\n".join([
-                        k for k, v in dict(apply.apply_status).items() if v
-                    ]),
-                    "```"
-                ])
+                description=f"您通過的身分為: `{apply.pass_job}`"
             )
-            apply.update(code=None).execute()
+            applyDB.update(code=None).where(
+                applyDB.thread_id == apply.thread_id).execute()
         else:
             embed = Embed(
                 title="驗證失敗", description="未知的驗證碼，如有疑問，請洽人事組詢問", color=0xe74c3c
             )
 
         await ctx.respond(embed=embed, ephemeral=True)
+
+    @discord.slash_command(description="test", guild_only=True)
+    async def test_apply(self, ctx: ApplicationContext):
+        self.bot.dispatch(
+            'new_apply',
+            EventData(
+                email='test@gmail.com',
+                selfIntro='test',
+                identity='test',
+                CV='test',
+                reason='test',
+                thoughts='test',
+                jobs=['美術 - 網站界面設計', '美術 - 網站界面設計2'],
+                time='2022/6/9 上午 10:45:32',
+                ID=100,
+                remark='test'
+            )
+        )
+        await ctx.respond('test')
+
+    @discord.Cog.listener()
+    async def on_ready(self):
+        self.bot.add_view(ApplyView(self.bot))
+
+
+class ApplyView(View):
+    def __init__(self, bot: 'LIPOIC'):
+        super().__init__(timeout=None)
+
+        self.bot = bot
+        for _, func in reversed(inspect.getmembers(self)):
+            if isinstance(func, Item):
+                self.add_item(func)
+
+    async def button_callback(self, interaction: Interaction, _type: Literal['PASS', 'FAIL']):
+        applyDB = self.bot.db.MemberApply
+        channel_id = interaction.channel_id
+        channel = await self.bot.get_or_fetch_channel(channel_id)
+
+        dbData: MemberApply = applyDB.get_or_none(thread_id=channel_id)
+        data = EventData(**dbData.data)
+        jobs = data.jobs
+        message_id, rank, allow_users = str(dbData.state).split('-')
+        rank = int(rank)
+        allow_users = [
+            str(_.id if (_ := self.bot.get_user(id)) else id) for id in allow_users.split(',') if id
+        ]
+        message = self.bot.get_message(int(message_id))
+
+        if (user_id := str(interaction.user.id)) not in allow_users:
+            allow_users.append(user_id)
+
+        if (rank == 0 and _type == 'FAIL') or (rank != 0 and _type == 'PASS'):
+            await message.edit(view=View(
+                Button(style=ButtonStyle.gray, label="面試已結束", disabled=True)
+            ))
+            if (select_job := jobs[rank - 1]) and rank != 0:
+                applyDB.update(pass_job=select_job).where(
+                    applyDB.thread_id == channel_id
+                ).execute()
+                embed = discord.Embed(
+                    title=f"第 {data.ID} 號應徵者", description=f"申請時間:\n`{data.time}`"
+                )
+                code = self.bot.db.create_apply_member_check_code(
+                    channel_id
+                )
+                embed.add_field(name='審核人員', value=', '.join(
+                    [f'<@{user}>' for user in allow_users]
+                ), inline=False)
+                embed.add_field(name='通過職位', value=select_job, inline=False)
+                embed.add_field(name='驗證碼', value=f'`{code}`', inline=False)
+                embed.add_field(name='email', value=data.email, inline=False)
+                await channel.send(embed=embed)
+            return await channel.edit(
+                name=f"{'✅' if select_job else '❌'} {channel.name}",
+                archived=True, locked=True
+            )
+
+        applyDB.update(
+            state=f'{message_id}-{rank + 1}-{",".join(allow_users)}'
+        ).where(applyDB.thread_id == channel_id).execute()
+
+        (stage_button := self.stage_button).label = f'組長二審: {jobs[rank]}'
+
+        await interaction.response.edit_message(view=View(
+            stage_button, self.stage_success, self.stage_fail,
+            timeout=None
+        ))
+
+    async def stage_success_callback(self, interaction: ApplicationContext):
+        await self.button_callback(interaction, 'PASS')
+
+    async def stage_fail_callback(self, interaction: ApplicationContext):
+        await self.button_callback(interaction, 'FAIL')
+
+    @property
+    def stage_button(self):
+        return Button(
+            style=ButtonStyle.gray, label='人事一審', disabled=True, custom_id='apply_stage_button', row=0
+        )
+
+    @property
+    def stage_success(self):
+        (stage_success := Button(
+            custom_id='apply_stage_success', style=ButtonStyle.green, label='通過', row=1
+        )).callback = self.stage_success_callback
+
+        return stage_success
+
+    @property
+    def stage_fail(self):
+        (stage_fail := Button(
+            custom_id='apply_stage_fail', style=ButtonStyle.red, label='駁回', row=1
+        )).callback = self.stage_fail_callback
+
+        return stage_fail
 
 
 def setup(bot):
