@@ -13,8 +13,6 @@ class MemberApply(BaseModel):
 
     # thread ID
     thread_id = IntegerField(null=False, unique=True)
-    # email
-    email = TextField(null=False)
     # job verify code
     code = TextField(null=True)
     # job that has been passed

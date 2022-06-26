@@ -2,14 +2,13 @@ import inspect
 import discord
 from discord import (
     ChannelType, Embed, ButtonStyle,
-    Interaction, ApplicationContext, Option, TextChannel, User, ui
+    Interaction, ApplicationContext, Option, TextChannel
 )
 from discord.ui import View, Button, Item
 
-from typing import List, TYPE_CHECKING, Literal, Optional
+from typing import TYPE_CHECKING, Literal
 
-from utils.utils import ShallowData
-from core.types.MemberApply import jobsType, EventData
+from core.types.MemberApply import EventData
 
 if TYPE_CHECKING:
     from core import LIPOIC
@@ -53,7 +52,7 @@ class MemberApplyCog(discord.Cog):
         message = await apply_thread.send(embed=embed, view=ApplyView(self.bot))
 
         applyDB.insert(
-            thread_id=apply_thread.id, email=data.email, state=f'{message.id}-0-', data=data._asdict()
+            thread_id=apply_thread.id, state=f'{message.id}-0-', data=data._asdict()
         ).execute()
 
     @discord.slash_command(description="apply", guild_only=True)
@@ -134,7 +133,8 @@ class ApplyView(View):
             await message.edit(view=View(
                 Button(style=ButtonStyle.gray, label="面試已結束", disabled=True)
             ))
-            if (select_job := jobs[rank - 1]) and rank != 0:
+            if rank != 0:
+                select_job = jobs[rank - 1]
                 applyDB.update(pass_job=select_job).where(
                     applyDB.thread_id == channel_id
                 ).execute()
@@ -144,15 +144,15 @@ class ApplyView(View):
                 code = self.bot.db.create_apply_member_check_code(
                     channel_id
                 )
-                embed.add_field(name='審核人員', value=', '.join(
-                    [f'<@{user}>' for user in allow_users]
-                ), inline=False)
+                embed.add_field(name='審核人員', value=', '.join([
+                    f'<@{user}>' for user in allow_users
+                ]), inline=False)
                 embed.add_field(name='通過職位', value=select_job, inline=False)
                 embed.add_field(name='驗證碼', value=f'`{code}`', inline=False)
                 embed.add_field(name='email', value=data.email, inline=False)
                 await channel.send(embed=embed)
             return await channel.edit(
-                name=f"{'✅' if select_job else '❌'} {channel.name}",
+                name=f"{'✅' if rank != 0 else '❌'} {channel.name}",
                 archived=True, locked=True
             )
 
