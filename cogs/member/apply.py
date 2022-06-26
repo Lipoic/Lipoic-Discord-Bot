@@ -67,7 +67,7 @@ class MemberApplyCog(discord.Cog):
         if apply:
             embed = Embed(
                 title="驗證成功!",
-                description=f"您通過的身分為: `{apply.pass_job}`"
+                description=f"您通過的身分為:```{apply.pass_job}```"
             )
             applyDB.update(code=None).where(
                 applyDB.thread_id == apply.thread_id).execute()
@@ -77,25 +77,6 @@ class MemberApplyCog(discord.Cog):
             )
 
         await ctx.respond(embed=embed, ephemeral=True)
-
-    @discord.slash_command(description="test", guild_only=True)
-    async def test_apply(self, ctx: ApplicationContext):
-        self.bot.dispatch(
-            'new_apply',
-            EventData(
-                email='test@gmail.com',
-                selfIntro='test',
-                identity='test',
-                CV='test',
-                reason='test',
-                thoughts='test',
-                jobs=['美術 - 網站界面設計', '美術 - 網站界面設計2'],
-                time='2022/6/9 上午 10:45:32',
-                ID=100,
-                remark='test'
-            )
-        )
-        await ctx.respond('test')
 
     @discord.Cog.listener()
     async def on_ready(self):
@@ -150,7 +131,7 @@ class ApplyView(View):
                 embed.add_field(name='審核人員', value=', '.join([
                     f'<@{user}>' for user in allow_users
                 ]), inline=False)
-                embed.add_field(name='Email', value=data.email, inline=False)
+                embed.add_field(name='Email', value=f'```{data.email}```', inline=False)
                 embed.add_field(
                     name='通過職位', value=f'```{select_job}```', inline=False)
                 embed.add_field(name='驗證碼', value=f'`{code}`', inline=False)
