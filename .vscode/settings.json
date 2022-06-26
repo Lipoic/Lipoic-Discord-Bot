@@ -13,7 +13,6 @@
     "--ignore=E402,F841,F401,E302,E305,W503,E722,F821",
     "--exclude=.git,__pycache__,build,dist",
     "--per-file-ignores=__init__.py:F403",
-
   ],
   "commentTranslate.multiLineMerge": false,
   "python.linting.flake8CategorySeverity.E": "Error",
