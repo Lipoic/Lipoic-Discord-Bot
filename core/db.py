@@ -1,4 +1,3 @@
-import peewee
 import random
 from string import ascii_letters, digits
 from .models import DATABASE, getModels
