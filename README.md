@@ -2,6 +2,8 @@
 
 the bot of Lipoic official discord server
 
+Please view `config.yml.example` and create a `config.yml` file.
+
 ## setup
 
 ```sh
