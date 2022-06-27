@@ -2,7 +2,7 @@
 
 the bot of Lipoic official discord server
 
-Please view `config.yml.example` and create a `config.yml` file.
+Please follow the format of `config.yml.example` to create a `config.yml` file.
 
 ## setup
 
