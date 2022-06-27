@@ -1,4 +1,4 @@
-dvc_id:
+dvc_ids:
   - int  # 創建動態語音 頻道ID
   - ...  # 可多個，以此類推
 member_role_id: int  # @組織成員 身份組ID

@@ -49,7 +49,7 @@ class LIPOIC(discord.Bot):
         # Configs
         with open("config.yml", "r", encoding="utf8") as config_yaml:
             config = yaml.load(config_yaml, yaml.Loader)
-        self.dvc_ids: List[int] = config['dvc_id']
+        self.dvc_ids: List[int] = config['dvc_ids']
         self.member_role_id: int = config['member_role_id']
         self.apply_channel_id: int = config['apply_channel_id']
         self.job_role: dict = config['job_role']
