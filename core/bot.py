@@ -46,15 +46,15 @@ class LIPOIC(discord.Bot):
             'newApplyServerToken': os.getenv('NEW_APPLY_SERVER_TOKEN'),
         }
 
-        # config setting
+        # Configs
         with open("config.yml", "r", encoding="utf8") as config_yaml:
             config = yaml.load(config_yaml, yaml.Loader)
-        self.log.info("load config.yml is complete")
-        # print(config)
         self.dvc_ids: List[int] = config['dvc_id']
         self.member_role_id: int = config['member_role_id']
         self.apply_channel_id: int = config['apply_channel_id']
         self.job_role: dict = config['job_role']
+
+        self.log.info("load config.yml is complete")
 
         super().__init__(*args, **kwargs)
 
