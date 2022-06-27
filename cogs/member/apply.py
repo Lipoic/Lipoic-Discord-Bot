@@ -24,9 +24,7 @@ class MemberApplyCog(discord.Cog):
         applyDB = self.bot.db.MemberApply
         jobs = data.jobs
 
-        apply_channel: TextChannel = self.bot.get_channel(
-            990449282190553089  # ID just for test
-        )
+        apply_channel: TextChannel = self.bot.get_channel(self.bot.apply_channel_id)
         embed = discord.Embed(
             title=f"第{data.ID}號應徵者", description=f"申請時間:\n`{data.time}`"
         )
@@ -64,12 +62,9 @@ class MemberApplyCog(discord.Cog):
         applyDB = self.bot.db.MemberApply
         apply: MemberApply = applyDB.get_or_none(applyDB.code == code)
         if apply:
-            job_roles = {
-                '美術': 990534021207445524,
-                '資訊': 990533947303813210
-            }  # roles ID just for test
-            role = ctx.guild.get_role(job_roles[apply.pass_job[0:2]])
-            await ctx.author.add_roles(role)
+            member_role = ctx.guild.get_role(self.bot.member_role_id)
+            job_role = ctx.guild.get_role(self.bot.job_role[apply.pass_job[0:2]])
+            await ctx.author.add_roles(member_role, job_role)
             embed = Embed(
                 title="驗證成功!",
                 description=f"您通過的身分為:```{apply.pass_job}```"
