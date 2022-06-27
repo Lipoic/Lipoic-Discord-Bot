@@ -210,7 +210,7 @@ class LIPOIC(discord.Bot):
                         while True:
                             _type, msg = await getMsg()
 
-                            if _type in [aiohttp.WSMsgType.CLOSED, aiohttp.WSMsgType.ERROR]:
+                            if _type in {aiohttp.WSMsgType.CLOSED, aiohttp.WSMsgType.ERROR}:
                                 break
                             if not isinstance(msg, dict):
                                 continue
