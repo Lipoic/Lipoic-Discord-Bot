@@ -1,7 +1,7 @@
 dvc_id:
   - int  # 創建動態語音 頻道ID
   - ...  # 可多個，以此類推
-member_role_id: int  # @成員 身份組ID
+member_role_id: int  # @組織成員 身份組ID
 apply_channel_id: int  # 面試室 頻道ID
 job_role:
   '美術': int  # @美術 身份組ID
