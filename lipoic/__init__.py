@@ -2,6 +2,7 @@ from pathlib import Path
 
 __all__ = (
     '__version__',
+    '__base_dir__',
     '__config_path__',
 )
 
