@@ -2,7 +2,23 @@
 
 the bot of Lipoic official discord server
 
-Please follow the format of `config.yml.example` to create a `config.yml` file.
+## configs
+
+### token
+
+1. use command
+
+```sh
+python -m lipoic -t <<Your discord bot token>>
+```
+
+2. use `.env` or `env`
+create `.env` file follow the format `.env.example`
+
+### config
+
+Please follow the format of `config.yml` set in `config.yml`.
+( please run once )
 
 ## setup
 
@@ -17,7 +33,7 @@ pipenv shell
 ### pipenv
 
 ```sh
-python main.py
+python -m lipoic
 ```
 
 ### docker
