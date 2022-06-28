@@ -1,0 +1,12 @@
+dvc_ids:
+  - int  # 創建動態語音 頻道ID
+  # - ...  # 可多個，以此類推
+member_role_id: int  # @組織成員 身份組ID
+apply_channel_id: int  # 面試室 頻道ID
+job_role:
+  '美術': int  # @美術 身份組ID
+  '資訊': int  # @資訊 身份組ID
+  '行政': int  # @行政 身份組ID
+  '財務': int  # @財務 身份組ID
+  '其他': int  # @其他 身份組ID
+  # ...  # 若以後有更多職位，以上方格式類推

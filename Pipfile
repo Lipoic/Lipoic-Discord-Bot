@@ -4,7 +4,7 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-py-cord = "==2.0.0b7"
+py-cord = "==2.0.0rc1"
 python-dotenv = "*"
 rich = "*"
 flake8 = "*"

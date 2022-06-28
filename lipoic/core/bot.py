@@ -2,9 +2,10 @@ import json
 import yaml
 import platform
 import aiohttp
+
 from .types.MemberApply import EventData
 
-from main import __version__
+from lipoic import __version__, __config_path__, __base_dir__
 from typing import Any, Dict, List, Callable, Coroutine, Literal, Optional, Union
 import logging
 
@@ -25,7 +26,8 @@ CoreFuncType = Callable[..., Coroutine[Any, Any, Any]]
 class LIPOIC(discord.Bot):
     __version__ = __version__
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, debug: bool = False, **kwargs):
+        self.debug = debug
         self._config = []
         self.lipoic_events: Dict[str, CoreFuncType] = {}
 
@@ -47,14 +49,19 @@ class LIPOIC(discord.Bot):
         }
 
         # Configs
-        with open("config.yml", "r", encoding="utf8") as config_yaml:
-            config = yaml.load(config_yaml, yaml.Loader)
-        self.dvc_ids: List[int] = config['dvc_ids']
-        self.member_role_id: int = config['member_role_id']
-        self.apply_channel_id: int = config['apply_channel_id']
-        self.job_role: dict = config['job_role']
+        config_file = __config_path__ / 'config.yml'
 
-        self.log.info("load config.yml is complete")
+        if not config_file.exists():
+            with open(__base_dir__ / 'data' / 'config.yml', 'r', encoding='utf8') as f:
+                with open(config_file, 'w', encoding='utf8') as file:
+                    file.write(f.read())
+        with open(config_file, "r", encoding="utf8") as config_yaml:
+            config = yaml.load(config_yaml, yaml.Loader)
+
+            self.dvc_ids: List[int] = config['dvc_ids']
+            self.member_role_id: int = config['member_role_id']
+            self.apply_channel_id: int = config['apply_channel_id']
+            self.job_role: dict = config['job_role']
 
         super().__init__(*args, **kwargs)
 
@@ -257,9 +264,8 @@ class LIPOIC(discord.Bot):
         rich_output_message += f"[red]py-cord version: {discord.__version__}[/red]\n"
         rich_output_message += f"[red]LIPOIC version: {self.__version__}[/red]\n"
 
-        self.load_extension("cogs.__init__")
+        self.load_extension("lipoic.cogs.__init__")
         self.add_cog(MainEventsCog(self))
 
         self.loop.create_task(self.getNewApply())
-
         super().run(*args, **kwargs)
