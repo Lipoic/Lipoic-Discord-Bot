@@ -1,12 +1,39 @@
-
+import argparse
+import logging
 import os
+from typing import NamedTuple, Optional
 import dotenv
 
-if __name__ == "__main__":
-    from .core import LIPOIC, logging
-    logging.init_logging(level="INFO")
+if __name__ == '__main__':
+    from .core import LIPOIC, logging as lipoicLog
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        '-d', '--debug',
+        help='debug mode',
+        action='store_true',
+    )
+    parser.add_argument(
+        '-l', '--level',
+        help='logging level',
+        choices=logging._nameToLevel.keys(),
+        default='INFO',
+        type=str,
+    )
+    parser.add_argument(
+        '-t', '--token',
+        help='bot token',
+        type=str,
+    )
 
+    class ArgsType(NamedTuple):
+        token: Optional[str]
+        level: str
+        debug: bool
+
+    args: ArgsType = parser.parse_args()
+
+    lipoicLog.init_logging(level=args.level)
     dotenv.load_dotenv()
 
-    bot = LIPOIC()
-    bot.run(os.getenv("DISCORD_TOKEN"))
+    bot = LIPOIC(debug=args.debug)
+    bot.run(args.token or os.getenv('DISCORD_TOKEN'))
