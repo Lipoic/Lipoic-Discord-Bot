@@ -137,3 +137,4 @@ tokens.py
 /data/*.db-wal
 
 .clasp.json
+config.yml

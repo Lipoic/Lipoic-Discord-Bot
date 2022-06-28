@@ -2,8 +2,8 @@ const tokensData = SpreadsheetApp.openById(
   '1jXfmOdm7PJ5MhKqNBE1JHtEPMY_HzHWM-B1qtN8_DzA'
 ).getSheetByName('data');
 
-const SERVER_URL = tokensData.getRange('A2').getValues().shift().shift();
-const TOKEN = tokensData.getRange('B2').getValues().shift().shift();
+const SERVER_URL = tokensData?.getRange('A2').getValues().shift()?.shift();
+const TOKEN = tokensData?.getRange('B2').getValues().shift()?.shift();
 
 export const onFormSubmit = (
   event: GoogleAppsScript.Events.SheetsOnFormSubmit & { namedValues: formData }

@@ -4,9 +4,13 @@ from discord import ApplicationContext, Option
 from discord.ext import commands
 import datetime
 
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from core import LIPOIC
+
 
 class MuteCog(discord.Cog):
-    def __init__(self, bot):
+    def __init__(self, bot: 'LIPOIC'):
         self.bot = bot
 
     @commands.has_permissions(moderate_members=True)

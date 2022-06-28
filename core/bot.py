@@ -1,4 +1,5 @@
 import json
+import yaml
 import platform
 import aiohttp
 from .types.MemberApply import EventData
@@ -45,8 +46,15 @@ class LIPOIC(discord.Bot):
             'newApplyServerToken': os.getenv('NEW_APPLY_SERVER_TOKEN'),
         }
 
-        # dynamic voice channel ID
-        self.dvc_ids: List[int] = [977050757461336124]
+        # Configs
+        with open("config.yml", "r", encoding="utf8") as config_yaml:
+            config = yaml.load(config_yaml, yaml.Loader)
+        self.dvc_ids: List[int] = config['dvc_ids']
+        self.member_role_id: int = config['member_role_id']
+        self.apply_channel_id: int = config['apply_channel_id']
+        self.job_role: dict = config['job_role']
+
+        self.log.info("load config.yml is complete")
 
         super().__init__(*args, **kwargs)
 
@@ -210,7 +218,7 @@ class LIPOIC(discord.Bot):
                         while True:
                             _type, msg = await getMsg()
 
-                            if _type in [aiohttp.WSMsgType.CLOSED, aiohttp.WSMsgType.ERROR]:
+                            if _type in {aiohttp.WSMsgType.CLOSED, aiohttp.WSMsgType.ERROR}:
                                 break
                             if not isinstance(msg, dict):
                                 continue
