@@ -8,11 +8,11 @@ from discord.ui import View, Button, Item
 
 from typing import TYPE_CHECKING, Literal
 
-from core.types.MemberApply import EventData
+from lipoic.core.types.MemberApply import EventData
 
 if TYPE_CHECKING:
-    from core import LIPOIC
-    from core.models import MemberApply
+    from lipoic.core import LIPOIC
+    from lipoic.core.models import MemberApply
 
 
 class MemberApplyCog(discord.Cog):

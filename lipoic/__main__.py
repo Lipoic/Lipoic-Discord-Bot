@@ -1,10 +1,9 @@
-__version__ = "0.0.1"
+
+import os
+import dotenv
 
 if __name__ == "__main__":
-    from core import LIPOIC, logging
-    import dotenv
-    import os
-
+    from .core import LIPOIC, logging
     logging.init_logging(level="INFO")
 
     dotenv.load_dotenv()
