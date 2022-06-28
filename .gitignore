@@ -131,10 +131,8 @@ dmypy.json
 # token
 tokens.py
 
-/data
 /data/*.db
 /data/*.db-shm
 /data/*.db-wal
 
 .clasp.json
-config.yml

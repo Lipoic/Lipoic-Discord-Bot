@@ -9,10 +9,8 @@ FROM base
 WORKDIR /code
 
 COPY --from=builder /root/.local /root/.local
-COPY . .
-
-VOLUME /data
+COPY ./lipoic ./lipoic
 
 ENV PATH=/root/.local:$PATH
 
-CMD [ "python", "./main.py" ]
+CMD [ "python", "-m", "lipoic" ]
