@@ -63,8 +63,11 @@ class MemberApplyCog(discord.Cog):
         apply: MemberApply = applyDB.get_or_none(applyDB.code == code)
         if apply:
             member_role = ctx.guild.get_role(self.bot.member_role_id)
-            job_role = ctx.guild.get_role(self.bot.job_role[apply.pass_job[0:2]])
-            await ctx.author.add_roles(member_role, job_role)
+            if (apply_role := self.bot.job_role.get(apply.pass_job[0:2], None)):
+                job_role = ctx.guild.get_role(apply_role)
+                await ctx.author.add_roles(member_role, job_role)
+            else:
+                await ctx.author.add_roles(member_role)
             embed = Embed(
                 title="驗證成功!",
                 description=f"您通過的身分為:```{apply.pass_job}```"
