@@ -23,6 +23,7 @@ class DevMember(BaseModel):
 
 class DevMemberType(TypedDict):
     """Dev Member data Type"""
+
     user_id: int
     name: Optional[str]
     position: List[str]

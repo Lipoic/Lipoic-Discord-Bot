@@ -1,9 +1,9 @@
 from typing import Any, Generic, TypeVar
 
 
-T = TypeVar('T')
+T = TypeVar("T")
 
-__all__ = ['ShallowData', 'MISSING']
+__all__ = ["ShallowData", "MISSING"]
 
 
 class _MissingSentinel:
@@ -14,7 +14,7 @@ class _MissingSentinel:
         return False
 
     def __str__(self) -> str:
-        return '...'
+        return "..."
 
     def __repr__(self) -> str:
         return self.__str__()

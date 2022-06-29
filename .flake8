@@ -10,4 +10,6 @@ ignore =
    W503,
    F722,
    # -----
-   F821
+   F821,
+   # do not use bare 'except'flake8(E722)
+   E722

@@ -2,23 +2,27 @@ import asyncio
 from typing import Callable, Coroutine, Any, Dict, List, Optional
 
 
-__all__ = ('Events')
+__all__ = "Events"
 
 CoroFunc = Callable[..., Any]
 
 
 class Events:
-    def __init__(self, call_class: bool = True, class_class_start: Optional[str] = None):
+    def __init__(
+        self, call_class: bool = True, class_class_start: Optional[str] = None
+    ):
         self._call_class = call_class
-        self._class_class_start = class_class_start or 'on_'
+        self._class_class_start = class_class_start or "on_"
 
         self.extra_events: Dict[str, List[CoroFunc]] = {}
 
-    def add_event_listener(self, func: CoroFunc, name: Optional[str] = None, once: bool = False) -> None:
+    def add_event_listener(
+        self, func: CoroFunc, name: Optional[str] = None, once: bool = False
+    ) -> None:
         name = name or func.__name__
 
         if not callable(func):
-            raise TypeError('func must be callable')
+            raise TypeError("func must be callable")
 
         if once:
             self.once(func, name)
@@ -29,13 +33,16 @@ class Events:
         else:
             self.extra_events[name] = [func]
 
-    def on(self, func: CoroFunc, name: Optional[str] = None, once: bool = False) -> None:
+    def on(
+        self, func: CoroFunc, name: Optional[str] = None, once: bool = False
+    ) -> None:
         self.add_event_listener(func, name, once)
 
     def once(self, func: CoroFunc, name: Optional[str] = None) -> None:
         def _remove_event_listener():
             self.remove_event_listener(func, name)
             self.remove_event_listener(_remove_event_listener, name)
+
         self.add_event_listener(_remove_event_listener, name)
         self.add_event_listener(func, name)
 
@@ -43,7 +50,9 @@ class Events:
         self.add_event_listener(self, func.__name__, func)
         return func
 
-    def listen(self, name: Optional[str] = None, once: bool = False) -> Callable[[CoroFunc], CoroFunc]:
+    def listen(
+        self, name: Optional[str] = None, once: bool = False
+    ) -> Callable[[CoroFunc], CoroFunc]:
         def decorator(func: CoroFunc) -> CoroFunc:
             self.add_event_listener(func, name, once)
             return func
@@ -90,7 +99,7 @@ class Events:
         if asyncio.iscoroutinefunction(coro):
             asyncio.create_task(
                 self._run_async_event(coro, event_name, *args, **kwargs),
-                name=f'{self.__class__.__name__}: {event_name}'
+                name=f"{self.__class__.__name__}: {event_name}",
             )
             return
         self._run_event(coro, event_name, *args, **kwargs)
@@ -107,8 +116,8 @@ class Events:
         except asyncio.CancelledError:
             ...
         except Exception as er:
-            if event_name != 'error':
-                self.dispatch('error', *args, **kwargs, error=er)
+            if event_name != "error":
+                self.dispatch("error", *args, **kwargs, error=er)
 
     def _run_event(
         self,
@@ -120,8 +129,8 @@ class Events:
         try:
             coro(*args, **kwargs)
         except Exception as er:
-            if event_name != 'error':
-                self.dispatch('error', *args, **kwargs, error=er)
+            if event_name != "error":
+                self.dispatch("error", *args, **kwargs, error=er)
 
     @property
     def events_names(self) -> List[str]:
