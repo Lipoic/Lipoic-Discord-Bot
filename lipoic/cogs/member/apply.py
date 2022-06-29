@@ -63,7 +63,7 @@ class MemberApplyCog(discord.Cog):
         apply: MemberApply = applyDB.get_or_none(applyDB.code == code)
         if apply:
             member_role = ctx.guild.get_role(self.bot.member_role_id)
-            if (apply_role := self.bot.job_role.get(apply.pass_job[0:2])):
+            if (apply_role := self.bot.job_role.get(apply.pass_job[0:2], None)):
                 job_role = ctx.guild.get_role(apply_role)
                 await ctx.author.add_roles(member_role, job_role)
             else:
