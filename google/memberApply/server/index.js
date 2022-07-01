@@ -7,6 +7,7 @@ import http from 'http';
 const app = express().use(bodyParser.json()).use(cors());
 const server = http.createServer(app);
 const wss = new WebSocketServer({ server });
+const PORT = process.env.PORT || 80;
 
 process
   .on('uncaughtException', (er) =>
@@ -56,6 +57,6 @@ wss.on('connection', (ws) => {
   ws.send(JSON.stringify({ type: 'READY', op: 0 }));
 });
 
-server.listen(3000, () => {
-  console.log(`the app listening on port ${3000}`);
+server.listen(PORT, () => {
+  console.log(`the app listening on port ${PORT}`);
 });
