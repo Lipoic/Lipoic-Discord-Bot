@@ -9,6 +9,7 @@ python-dotenv = "*"
 rich = "*"
 peewee = "*"
 aiohttp-sse-client = "*"
+pyyaml = "*"
 
 [dev-packages]
 flake8 = "*"
