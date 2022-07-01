@@ -57,8 +57,9 @@ class MemberApplyCog(discord.Cog):
             type=ChannelType.public_thread,
             reason=f"編號#{data.ID}應徵申請",
         )
-
-        message = await apply_thread.send(embed=embed, view=ApplyView(self.bot))
+        message = await apply_thread.send(
+            f"<@&{self.bot.hr_role_id}>", embed=embed, view=ApplyView(self.bot)
+        )
 
         applyDB.insert(
             thread_id=apply_thread.id, state=f"{message.id}-0-", data=data._asdict()
