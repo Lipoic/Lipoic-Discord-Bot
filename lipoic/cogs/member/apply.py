@@ -57,9 +57,8 @@ class MemberApplyCog(discord.Cog):
             type=ChannelType.public_thread,
             reason=f"編號#{data.ID}應徵申請",
         )
-        hr_role = apply_channel.guild.get_role(self.bot.hr_role_id)
         message = await apply_thread.send(
-            hr_role.mention, embed=embed, view=ApplyView(self.bot)
+            f"<@&{self.bot.hr_role_id}>", embed=embed, view=ApplyView(self.bot)
         )
 
         applyDB.insert(
