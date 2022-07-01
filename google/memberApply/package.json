@@ -1,7 +1,7 @@
 {
   "name": "lipoic-member-apply",
   "version": "1.0.0",
-  "license": "MIT",
+  "license": "GPL 3",
   "dependencies": {
     "@types/google-apps-script": "^1.0.49"
   }
