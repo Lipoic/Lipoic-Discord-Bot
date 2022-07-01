@@ -1,9 +1,7 @@
-const tokensData = SpreadsheetApp.openById(
-  '1jXfmOdm7PJ5MhKqNBE1JHtEPMY_HzHWM-B1qtN8_DzA'
-).getSheetByName('data');
+const properties = PropertiesService.getScriptProperties();
 
-const SERVER_URL = tokensData?.getRange('A2').getValues().shift()?.shift();
-const TOKEN = tokensData?.getRange('B2').getValues().shift()?.shift();
+const ServerUrl = properties.getProperty('server_url');
+const TOKEN = properties.getProperty('token');
 
 export const onFormSubmit = (
   event: GoogleAppsScript.Events.SheetsOnFormSubmit & { namedValues: formData }
@@ -28,7 +26,7 @@ export const onFormSubmit = (
   job2 && data.jobs.push(job2);
   job3 && data.jobs.push(job3);
 
-  UrlFetchApp.fetch(SERVER_URL, {
+  UrlFetchApp.fetch(ServerUrl, {
     method: 'post',
     payload: JSON.stringify(data),
     contentType: 'application/json',

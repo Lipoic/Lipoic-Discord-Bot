@@ -21,7 +21,7 @@ app
   .get('/uptimerobot', (_req, res) => res.send('check'));
 
 app.post('/dc-bot/new-apply', (req, res) => {
-  if (req.headers.authorization === process.env.CHECK_TOKEN) {
+  if (req.headers.authorization === process.env.TOKEN) {
     app.emit('new-apply', req.body);
     res.send('done');
   } else res.status(403).send('error');
@@ -29,10 +29,11 @@ app.post('/dc-bot/new-apply', (req, res) => {
 
 wss.on('connection', (ws) => {
   let authorization = false;
+
   ws.on('message', (data) => {
     try {
       data = JSON.parse(data.toString());
-      if (data.op === 5 && data.authorization === process.env.CHECK_TOKEN) {
+      if (data.op === 5 && data.authorization === process.env.TOKEN) {
         ws.send(JSON.stringify({ type: 'START', op: 0 }));
         authorization = true;
       }
@@ -43,7 +44,7 @@ wss.on('connection', (ws) => {
       );
 
       ws.on('close', () => clearInterval(loop));
-    } catch {}
+    } catch { }
   });
 
   app.on('new-apply', (data) => {
@@ -56,5 +57,5 @@ wss.on('connection', (ws) => {
 });
 
 server.listen(3000, () => {
-  console.log(`Example app listening on port ${3000}`);
+  console.log(`the app listening on port ${3000}`);
 });

@@ -1,9 +1,8 @@
 {
-  "name": "member-apply",
+  "name": "lipoic-member-apply",
   "version": "1.0.0",
-  "main": "index.js",
   "license": "MIT",
   "dependencies": {
-    "@types/google-apps-script": "^1.0.47"
+    "@types/google-apps-script": "^1.0.49"
   }
 }
