@@ -34,27 +34,7 @@ export const onFormSubmit = (
   });
 };
 export const doGet = (event: GoogleAppsScript.Events.DoGet) => {
-  try {
-    console.log(JSON.stringify(event));
-
-    const data = <postData>(<unknown>event.parameter);
-    if (data.authorization !== TOKEN)
-      return HtmlService.createHtmlOutput(JSON.stringify({ code: 403 }));
-    delete data.authorization;
-
-    const template = HtmlService.createTemplateFromFile('mail.html');
-
-    template.data = data;
-
-    MailApp.sendEmail({
-      to: data.email,
-      subject: 'Lipoic',
-      htmlBody: template.evaluate().getContent(),
-    });
-    return HtmlService.createHtmlOutput(JSON.stringify({ code: 200 }));
-  } catch {
-    return HtmlService.createHtmlOutput(JSON.stringify({ code: 400 }));
-  }
+  return HtmlService.createHtmlOutput(JSON.stringify({ code: 405 }));
 };
 export const doPost = (event: GoogleAppsScript.Events.DoPost) => {
   try {
@@ -121,6 +101,7 @@ export interface postData {
   position: string;
   HR_DC_Id: string;
   HR_DC_Name: string;
+  check_code: string;
   /** token */
   authorization: string;
 }
