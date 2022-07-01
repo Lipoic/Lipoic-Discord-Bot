@@ -6,19 +6,19 @@ from typing import TYPE_CHECKING, Dict
 
 if TYPE_CHECKING:
     from . import LIPOIC
-    from .models import BaseModel, DevMember, Dvc, Member, MemberApply
+    from .models import BaseModel, DevMember, Dvc, Member, MemberApply  # noqa: F401
 
 
 class DB:
-    DevMember: 'DevMember'
-    Dvc: 'Dvc'
-    Member: 'Member'
-    MemberApply: 'MemberApply'
+    DevMember: "DevMember"
+    Dvc: "Dvc"
+    Member: "Member"
+    MemberApply: "MemberApply"
 
-    def __init__(self, bot: 'LIPOIC'):
+    def __init__(self, bot: "LIPOIC"):
         self.bot = bot
         self.database = DATABASE
-        self._models: Dict[str, 'BaseModel'] = getModels()
+        self._models: Dict[str, "BaseModel"] = getModels()
 
         self.load_models()
         self.create_tables()
@@ -42,7 +42,7 @@ class DB:
     def create_apply_member_check_code(self, id: str):
         applyDB = self.MemberApply
 
-        code_str = ''.join(random.sample(ascii_letters + digits, k=6))
+        code_str = "".join(random.sample(ascii_letters + digits, k=6))
 
         if applyDB.get_or_none(applyDB.code == code_str):
             return self.create_apply_member_check_code(id)

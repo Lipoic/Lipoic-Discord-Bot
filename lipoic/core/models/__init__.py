@@ -10,16 +10,16 @@ from .dvc import Dvc, DvcType
 from .memberApply import MemberApply, MemberApplyType
 
 __all__ = [
-    'BaseModel',
-    'DATABASE',
-    'DevMember',
-    'DevMemberType',
-    'Member',
-    'MemberType',
-    'Dvc',
-    'DvcType',
-    'MemberApply',
-    'MemberApplyType',
+    "BaseModel",
+    "DATABASE",
+    "DevMember",
+    "DevMemberType",
+    "Member",
+    "MemberType",
+    "Dvc",
+    "DvcType",
+    "MemberApply",
+    "MemberApplyType",
 ]
 
 

@@ -1,4 +1,3 @@
-
 from datetime import datetime
 import discord
 from discord.ext import commands
@@ -11,7 +10,7 @@ if TYPE_CHECKING:
 
 
 class MainEventsCog(discord.Cog):
-    def __init__(self, bot: 'LIPOIC') -> None:
+    def __init__(self, bot: "LIPOIC") -> None:
         self.bot = bot
         self.log = bot.log
 
@@ -27,22 +26,21 @@ class MainEventsCog(discord.Cog):
 
     # TODO watermelon watch this, new apply user event
     @discord.Cog.listener()
-    async def on_new_apply(self, data: 'EventData'):
+    async def on_new_apply(self, data: "EventData"):
         print(data.time)
 
     # TODO watermelon watch this, link to the new apply server event
     @discord.Cog.listener()
     async def on_start_new_apply(self):
-        print('start')
+        print("start")
 
     @discord.Cog.listener()
-    async def on_application_command_error(self, ctx: discord.ApplicationContext, error: discord.DiscordException):
+    async def on_application_command_error(
+        self, ctx: discord.ApplicationContext, error: discord.DiscordException
+    ):
         print(f"{type(error)}: {error}")
-        # if isinstance(error, discord.ApplicationCommandInvokeError):
-        #     embed = discord.Embed(title="發生錯誤!", description=f"Error:```{error}```", color=0xe74c3c)
-        #     await ctx.respond(embed=embed)
         if isinstance(error, commands.MissingPermissions):
             embed = discord.Embed(
-                title="發生錯誤!", description="你沒有權限執行指令", color=0xe74c3c
+                title="發生錯誤!", description="你沒有權限執行指令", color=0xE74C3C
             )
             await ctx.respond(embed=embed)

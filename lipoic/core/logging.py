@@ -8,8 +8,14 @@ from typing import Iterable, List, Optional, Tuple, Union
 import rich
 from pygments.styles.monokai import MonokaiStyle
 from pygments.token import (
-    Comment, Error, Keyword,
-    Name, Number, Operator, String, Token
+    Comment,
+    Error,
+    Keyword,
+    Name,
+    Number,
+    Operator,
+    String,
+    Token,
 )
 from rich._log_render import FormatTimeCallable, LogRender
 from rich.console import ConsoleRenderable
@@ -45,7 +51,8 @@ class RotatingFileHandler(handlers.RotatingFileHandler):
         self,
         name: str,
         directory: Optional[pathlib.Path] = None,
-        maxBytes: int = 0, backupCount: int = 0,
+        maxBytes: int = 0,
+        backupCount: int = 0,
         encoding: str = "utf-8",
     ):
         self.baseName = name
@@ -86,9 +93,7 @@ class LipoicLogRender(LogRender):
         output = Text()
         if self.show_time:
             log_time = log_time or console.get_datetime()
-            log_time_display = log_time.strftime(
-                time_format or self.time_format
-            )
+            log_time_display = log_time.strftime(time_format or self.time_format)
             if log_time_display == self._last_time:
                 output.append(" " * (len(log_time_display) + 1))
             else:
@@ -138,23 +143,29 @@ def init_logging(level: int, location: Optional[pathlib.Path] = None) -> None:
     rich_console = rich.get_console()
     rich.reconfigure(tab_size=2)
 
-    rich_console.push_theme(Theme({
-        "log.time": Style(dim=True),
-        "logging.level.warning": Style(color="yellow"),
-        "logging.level.critical": Style(color="white", bgcolor="red"),
-        "logging.level.verbose": Style(color="magenta", italic=True, dim=True),
-        "logging.level.trace": Style(color="white", italic=True, dim=True),
-        "repr.number": Style(color="cyan"),
-        "repr.url": Style(underline=True, italic=True, bold=False, color="cyan"),
-    }))
+    rich_console.push_theme(
+        Theme(
+            {
+                "log.time": Style(dim=True),
+                "logging.level.warning": Style(color="yellow"),
+                "logging.level.critical": Style(color="white", bgcolor="red"),
+                "logging.level.verbose": Style(color="magenta", italic=True, dim=True),
+                "logging.level.trace": Style(color="white", italic=True, dim=True),
+                "repr.number": Style(color="cyan"),
+                "repr.url": Style(
+                    underline=True, italic=True, bold=False, color="cyan"
+                ),
+            }
+        )
+    )
 
     file_formatter = logging.Formatter(
-        "[{asctime}] [{levelname}] {name}: {message}", datefmt="%Y-%m-%d %H:%M:%S", style="{"
+        "[{asctime}] [{levelname}] {name}: {message}",
+        datefmt="%Y-%m-%d %H:%M:%S",
+        style="{",
     )
 
-    rich_formatter = logging.Formatter(
-        "{message}", datefmt="[%X]", style="{"
-    )
+    rich_formatter = logging.Formatter("{message}", datefmt="[%X]", style="{")
     stdout_handler = LipoicRichHandler(
         rich_tracebacks=True,
         show_path=False,
@@ -192,10 +203,16 @@ def init_logging(level: int, location: Optional[pathlib.Path] = None) -> None:
         path.replace(location / f"previous{part}.log")
 
     latest = RotatingFileHandler(
-        "latest", directory=location, maxBytes=1e6, backupCount=MAX_OLD_LOGS,
+        "latest",
+        directory=location,
+        maxBytes=1e6,
+        backupCount=MAX_OLD_LOGS,
     )
     all = RotatingFileHandler(
-        "lipoic", directory=location, maxBytes=1e6, backupCount=MAX_OLD_LOGS,
+        "lipoic",
+        directory=location,
+        maxBytes=1e6,
+        backupCount=MAX_OLD_LOGS,
     )
 
     for handler in (latest, all):

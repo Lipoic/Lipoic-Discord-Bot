@@ -5,12 +5,13 @@ from discord.ext import commands
 import datetime
 
 from typing import TYPE_CHECKING
+
 if TYPE_CHECKING:
     from core import LIPOIC
 
 
 class MuteCog(discord.Cog):
-    def __init__(self, bot: 'LIPOIC'):
+    def __init__(self, bot: "LIPOIC"):
         self.bot = bot
 
     @commands.has_permissions(moderate_members=True)
@@ -24,11 +25,10 @@ class MuteCog(discord.Cog):
         minute: Option(int, "禁言的分鐘數", min_value=0, max_value=59, default=0),
         hour: Option(int, "禁言的小時數", min_value=0, max_value=23, default=0),
         day: Option(int, "禁言的天數", min_value=0, max_value=6, default=0),
-        week: Option(int, "禁言的週數", min_value=0, max_value=52, default=0)
+        week: Option(int, "禁言的週數", min_value=0, max_value=52, default=0),
     ):
         duration = datetime.timedelta(
-            seconds=second, minutes=minute,
-            hours=hour, days=day, weeks=week
+            seconds=second, minutes=minute, hours=hour, days=day, weeks=week
         )
         if not duration:
             minute = 1
@@ -53,7 +53,7 @@ class MuteCog(discord.Cog):
     @mute.error
     async def mute_error(self, ctx: ApplicationContext, error):
         embed = discord.Embed(
-            title="禁言失敗!", description=f"Error:```{error}```", color=0xe74c3c
+            title="禁言失敗!", description=f"Error:```{error}```", color=0xE74C3C
         )
         await ctx.respond(embed=embed, ephemeral=True)
 

@@ -8,16 +8,20 @@
   ],
   "python.linting.enabled": true,
   "python.linting.flake8Enabled": true,
-  "python.linting.flake8Args": [
-    "--max-line-length=120",
-    "--ignore=E402,F841,F401,E302,E305,W503,E722,F821",
-    "--exclude=.git,__pycache__,build,dist",
-    "--per-file-ignores=__init__.py:F403",
-  ],
-  "commentTranslate.multiLineMerge": false,
   "python.linting.flake8CategorySeverity.E": "Error",
-  "python.linting.flake8CategorySeverity.F": "Hint",
+  "python.linting.flake8CategorySeverity.F": "Error",
   "python.linting.flake8CategorySeverity.W": "Warning",
   "python.linting.flake8Path": "flake8",
-  "editor.formatOnSave": true
+  "python.linting.flake8Args": [
+    "--config=.flake8"
+  ],
+  // type check，but duscird.py options check is bad
+  "python.analysis.typeCheckingMode": "off",
+  // check in workspace python file
+  "python.analysis.diagnosticMode": "workspace",
+  "python.formatting.provider": "black",
+  "editor.formatOnSave": true,
+  "python.analysis.diagnosticSeverityOverrides": {
+    "reportMissingModuleSource": "none"
+  }
 }

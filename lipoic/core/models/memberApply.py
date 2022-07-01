@@ -25,6 +25,7 @@ class MemberApply(BaseModel):
 
 class MemberApplyType(TypedDict):
     """Member Apply type"""
+
     # thread ID
     thread_id: int
     # email
@@ -32,8 +33,8 @@ class MemberApplyType(TypedDict):
     # job verify code
     code: Optional[str]
     # job that has been passed
-    pass_job: Optional['jobsType']
+    pass_job: Optional["jobsType"]
     # state ram ( '{rank}-{allow_user}' )
     state: str
     # data
-    data: 'EventData'
+    data: "EventData"

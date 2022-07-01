@@ -45,23 +45,23 @@ class LIPOIC(discord.Bot):
         self._uptime = None
         self.dev_user_ids: List[int] = set(kwargs.get("dev_user_ids", set()))
         self.configs = {
-            'newApplyServerToken': os.getenv('NEW_APPLY_SERVER_TOKEN'),
+            "newApplyServerToken": os.getenv("NEW_APPLY_SERVER_TOKEN"),
         }
 
         # Configs
-        config_file = __config_path__ / 'config.yml'
+        config_file = __config_path__ / "config.yml"
 
         if not config_file.exists():
-            with open(__base_dir__ / 'data' / 'config.yml', 'r', encoding='utf8') as f:
-                with open(config_file, 'w', encoding='utf8') as file:
+            with open(__base_dir__ / "data" / "config.yml", "r", encoding="utf8") as f:
+                with open(config_file, "w", encoding="utf8") as file:
                     file.write(f.read())
         with open(config_file, "r", encoding="utf8") as config_yaml:
             config = yaml.load(config_yaml, yaml.Loader)
 
-            self.dvc_ids: List[int] = config['dvc_ids']
-            self.member_role_id: int = config['member_role_id']
-            self.apply_channel_id: int = config['apply_channel_id']
-            self.job_role: dict = config['job_role']
+            self.dvc_ids: List[int] = config["dvc_ids"]
+            self.member_role_id: int = config["member_role_id"]
+            self.apply_channel_id: int = config["apply_channel_id"]
+            self.job_role: dict = config["job_role"]
 
         super().__init__(*args, **kwargs)
 
@@ -83,9 +83,14 @@ class LIPOIC(discord.Bot):
         *args: Any,
         **kwargs: Any,
     ) -> asyncio.Task:
-        return asyncio.create_task(self._run_event(func, event_name, *args, **kwargs), name=f"lipoic: {event_name}")
+        return asyncio.create_task(
+            self._run_event(func, event_name, *args, **kwargs),
+            name=f"lipoic: {event_name}",
+        )
 
-    def addEventListener(self, func: CoreFuncType, event_name: Optional[str] = None) -> None:
+    def addEventListener(
+        self, func: CoreFuncType, event_name: Optional[str] = None
+    ) -> None:
         event_name = event_name or func.__name__
 
         if event_name in self.lipoic_events:
@@ -97,7 +102,9 @@ class LIPOIC(discord.Bot):
     def on(self, func: CoreFuncType, event_name: Optional[str] = None) -> None:
         return self.addEventListener(func, event_name)
 
-    def removeEventListener(self, func: CoreFuncType, event_name: Optional[str] = None) -> None:
+    def removeEventListener(
+        self, func: CoreFuncType, event_name: Optional[str] = None
+    ) -> None:
         event_name = event_name or func.__name__
 
         if event_name in self.extra_events:
@@ -129,7 +136,9 @@ class LIPOIC(discord.Bot):
             return user
         return await self.fetch_user(user_id)
 
-    async def get_or_fetch_member(self, guild: discord.Guild, member_id: Union[int, str]):
+    async def get_or_fetch_member(
+        self, guild: discord.Guild, member_id: Union[int, str]
+    ):
         """
         get or fetch member
 
@@ -175,7 +184,7 @@ class LIPOIC(discord.Bot):
         if not isinstance(cog, discord.Cog):
             raise RuntimeError(
                 f"The {cog.__class__.__name__} class is not a cog.",
-                f"class in the {cog.__module__}"
+                f"class in the {cog.__module__}",
             )
 
         self.log.info(
@@ -184,17 +193,23 @@ class LIPOIC(discord.Bot):
 
         super().add_cog(cog, override=override)
 
-    def load_cog_dir(self, package_path: str, path: str, *, deep: bool = True, type: loadCogType = "load"):
+    def load_cog_dir(
+        self,
+        package_path: str,
+        path: str,
+        *,
+        deep: bool = True,
+        type: loadCogType = "load",
+    ):
         switch = {
             "load": self.load_extension,
             "unload": self.unload_extension,
-            "reload": self.reload_extension
+            "reload": self.reload_extension,
         }
         callFunc = switch.get(type)
         if callFunc is None:
             raise ValueError("type must be load, unload or reload")
-        path = os.path.dirname(os.path.realpath(path)) if \
-            os.path.isfile(path) else path
+        path = os.path.dirname(os.path.realpath(path)) if os.path.isfile(path) else path
 
         for _ in os.listdir(path):
             fullpath = os.path.join(path, _)
@@ -209,11 +224,12 @@ class LIPOIC(discord.Bot):
             try:
                 async with aiohttp.ClientSession() as session:
                     async with session.ws_connect(
-                        'ws://lipoic.a102009102009.repl.co',
+                        "ws://lipoic.a102009102009.repl.co",
                         timeout=30,
                         autoclose=False,
                         max_msg_size=0,
                     ) as ws:
+
                         async def getMsg():
                             data = await ws.receive()
                             msg = data.data
@@ -222,45 +238,52 @@ class LIPOIC(discord.Bot):
                             except:
                                 ...
                             return (data.type, msg)
+
                         while True:
                             _type, msg = await getMsg()
 
-                            if _type in {aiohttp.WSMsgType.CLOSED, aiohttp.WSMsgType.ERROR}:
+                            if _type in {
+                                aiohttp.WSMsgType.CLOSED,
+                                aiohttp.WSMsgType.ERROR,
+                            }:
                                 break
                             if not isinstance(msg, dict):
                                 continue
-                            op = msg.get('op', -1)
-                            msgType = msg.get('type', None)
+                            op = msg.get("op", -1)
+                            msgType = msg.get("type", None)
                             if op == 1:
-                                self.log.debug(
-                                    '[new-apply-server] check Heartbeat'
-                                )
+                                self.log.debug("[new-apply-server] check Heartbeat")
                                 continue
                             if op == 0:
-                                if msgType == 'READY':
-                                    await ws.send_str(json.dumps({
-                                        'op': 5,
-                                        'authorization': self.configs['newApplyServerToken']
-                                    }))
+                                if msgType == "READY":
+                                    await ws.send_str(
+                                        json.dumps(
+                                            {
+                                                "op": 5,
+                                                "authorization": self.configs[
+                                                    "newApplyServerToken"
+                                                ],
+                                            }
+                                        )
+                                    )
                                     continue
-                                if msgType == 'START':
-                                    self.dispatch('start_new_apply')
+                                if msgType == "START":
+                                    self.dispatch("start_new_apply")
                                     continue
-                                if msgType == 'NEW_APPLY':
+                                if msgType == "NEW_APPLY":
                                     self.dispatch(
-                                        'new_apply',
-                                        EventData(**msg.get('data'))
+                                        "new_apply", EventData(**msg.get("data"))
                                     )
-                                    self.log.debug(
-                                        '[new-apply-server] get new apply'
-                                    )
+                                    self.log.debug("[new-apply-server] get new apply")
                                     continue
             except Exception as e:
                 self.log.error(e)
 
     def run(self, *args: Any, **kwargs: Any):
         rich_output_message = ""
-        rich_output_message += f"[red]python version: {platform.python_version()}[/red]\n"
+        rich_output_message += (
+            f"[red]python version: {platform.python_version()}[/red]\n"
+        )
         rich_output_message += f"[red]py-cord version: {discord.__version__}[/red]\n"
         rich_output_message += f"[red]LIPOIC version: {self.__version__}[/red]\n"
 

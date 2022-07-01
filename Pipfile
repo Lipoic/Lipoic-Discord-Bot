@@ -7,12 +7,15 @@ name = "pypi"
 py-cord = "==2.0.0rc1"
 python-dotenv = "*"
 rich = "*"
-flake8 = "*"
 peewee = "*"
 aiohttp-sse-client = "*"
 
 [dev-packages]
-autopep8 = "*"
+flake8 = "*"
+black = "*"
 
 [requires]
 python_version = "3.10"
+
+[pipenv]
+allow_prereleases = true

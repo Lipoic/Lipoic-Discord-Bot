@@ -16,4 +16,5 @@ class Dvc(BaseModel):
 
 class DvcType(TypedDict):
     """dvc channel type"""
+
     channel_id: str
