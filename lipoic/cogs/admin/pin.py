@@ -15,7 +15,7 @@ class PinCog(discord.Cog):
     async def pin(
         self,
         ctx: ApplicationContext,
-        message_id: Option(str, "輸入要刪除的訊息ID"),
+        message_id: Option(str, "輸入要釘選的訊息ID"),
         reason: Option(str, "Reason", default="無原因"),
     ):
         member_role = ctx.guild.get_role(self.bot.member_role_id)
