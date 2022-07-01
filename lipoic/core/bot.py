@@ -224,7 +224,7 @@ class LIPOIC(discord.Bot):
             try:
                 async with aiohttp.ClientSession() as session:
                     async with session.ws_connect(
-                        "ws://lipoic.a102009102009.repl.co",
+                        f"ws://{os.getenv('SERVER_URL')}",
                         timeout=30,
                         autoclose=False,
                         max_msg_size=0,
