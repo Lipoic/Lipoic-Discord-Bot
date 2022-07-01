@@ -45,7 +45,8 @@ class LIPOIC(discord.Bot):
         self._uptime = None
         self.dev_user_ids: List[int] = set(kwargs.get("dev_user_ids", set()))
         self.configs = {
-            "newApplyServerToken": os.getenv("NEW_APPLY_SERVER_TOKEN"),
+            "memberApplyServerUrl": os.getenv("MEMBER_APPLY_SERVER_URL"),
+            "memberApplyServerToken": os.getenv("MEMBER_APPLY_SERVER_TOKEN"),
         }
 
         # Configs
@@ -224,7 +225,7 @@ class LIPOIC(discord.Bot):
             try:
                 async with aiohttp.ClientSession() as session:
                     async with session.ws_connect(
-                        "ws://lipoic.a102009102009.repl.co",
+                        self.configs["memberApplyServerUrl"],
                         timeout=30,
                         autoclose=False,
                         max_msg_size=0,
@@ -261,7 +262,7 @@ class LIPOIC(discord.Bot):
                                             {
                                                 "op": 5,
                                                 "authorization": self.configs[
-                                                    "newApplyServerToken"
+                                                    "memberApplyServerToken"
                                                 ],
                                             }
                                         )

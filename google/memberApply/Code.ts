@@ -26,7 +26,7 @@ export const onFormSubmit = (
   job2 && data.jobs.push(job2);
   job3 && data.jobs.push(job3);
 
-  UrlFetchApp.fetch(ServerUrl, {
+  UrlFetchApp.fetch(`${ServerUrl}/dc-bot/new-apply`, {
     method: 'post',
     payload: JSON.stringify(data),
     contentType: 'application/json',
