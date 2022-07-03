@@ -33,29 +33,42 @@ export const onFormSubmit = (
     headers: { Authorization: TOKEN },
   });
 };
-export const doGet = (event: GoogleAppsScript.Events.DoGet) => {
-  return HtmlService.createHtmlOutput(JSON.stringify({ code: 405 }));
+export const doGet = (_event: GoogleAppsScript.Events.DoGet) => {
+  return ContentService.createTextOutput(JSON.stringify({ code: 405 }));
 };
 export const doPost = (event: GoogleAppsScript.Events.DoPost) => {
   try {
     const data: postData = JSON.parse(event.postData.contents);
     if (data.authorization !== TOKEN)
-      return HtmlService.createHtmlOutput(JSON.stringify({ code: 403 }));
+      return ContentService.createTextOutput(JSON.stringify({ code: 403 }));
     delete data.authorization;
-    console.log(MailApp.getRemainingDailyQuota());
+    if (data.allow) {
+      const template = HtmlService.createTemplateFromFile('failMail.html');
 
-    const template = HtmlService.createTemplateFromFile('mail.html');
+      MailApp.sendEmail({
+        bcc: data.email,
+        subject: 'Lipoic',
+        htmlBody: template.evaluate().getContent(),
+      });
+    } else {
+      const template = HtmlService.createTemplateFromFile('mail.html');
 
-    template.data = data;
+      template.data = data;
 
-    MailApp.sendEmail({
-      to: data.email,
-      subject: 'Lipoic',
-      htmlBody: template.evaluate().getContent(),
-    });
-    return HtmlService.createHtmlOutput(JSON.stringify({ code: 200 }));
+      MailApp.sendEmail({
+        bcc: data.email,
+        subject: 'Lipoic 錄取通知書',
+        htmlBody: template.evaluate().getContent(),
+      });
+    }
+    return ContentService.createTextOutput(
+      JSON.stringify({
+        code: 200,
+        remaining: MailApp.getRemainingDailyQuota(),
+      })
+    );
   } catch {
-    return HtmlService.createHtmlOutput(JSON.stringify({ code: 400 }));
+    return ContentService.createTextOutput(JSON.stringify({ code: 400 }));
   }
 };
 export enum jobEnum {
@@ -93,15 +106,16 @@ export interface formData {
   時間戳記: [string];
 }
 
-export interface postData {
+export interface postData<A extends boolean = false> {
   /** send to {email} */
   email: string;
   date: string;
-  team: string;
-  position: string;
-  HR_DC_Id: string;
-  HR_DC_Name: string;
-  check_code: string;
+  team: A extends true ? string : undefined;
+  position: A extends true ? string : undefined;
+  HR_DC_Id: A extends true ? string : undefined;
+  HR_DC_Name: A extends true ? string : undefined;
+  check_code: A extends true ? string : undefined;
+  allow: A;
   /** token */
   authorization: string;
 }

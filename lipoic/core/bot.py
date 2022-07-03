@@ -47,10 +47,12 @@ class LIPOIC(discord.Bot):
         self.configs = {
             "memberApplyServerUrl": os.getenv("MEMBER_APPLY_SERVER_URL"),
             "memberApplyServerToken": os.getenv("MEMBER_APPLY_SERVER_TOKEN"),
+            "GOOGLE_SCRIPT_URL": os.getenv("GOOGLE_SCRIPT_URL"),
         }
 
         # Configs
-        config_file = __config_path__ / "config.yml"
+
+        config_file = __config_path__ / f"config{'.dev' if self.debug else ''}.yml"
 
         if not config_file.exists():
             with open(__base_dir__ / "data" / "config.yml", "r", encoding="utf8") as f:
