@@ -45,6 +45,16 @@ export const doPost = (event: GoogleAppsScript.Events.DoPost) => {
     if (data.allow) {
       const template = HtmlService.createTemplateFromFile('failMail.html');
 
+      const formats = ['{0}', '{0} 和 {1}', '{0}、 {1} 和 {2}'];
+
+      template.data = {
+        ...data,
+        jobsStr: formats[data.jobs.length].replace(
+          /\{[0-9]+\}/g,
+          (str, id) => data.jobs?.[+id] || str
+        ),
+      };
+
       MailApp.sendEmail({
         bcc: data.email,
         subject: 'Lipoic',
@@ -110,6 +120,7 @@ export interface postData<A extends boolean = false> {
   /** send to {email} */
   email: string;
   date: string;
+  jobs: A extends false ? jobsType[] : undefined;
   team: A extends true ? string : undefined;
   position: A extends true ? string : undefined;
   HR_DC_Id: A extends true ? string : undefined;
