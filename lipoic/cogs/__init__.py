@@ -2,6 +2,7 @@ from typing import TYPE_CHECKING
 
 import discord
 from discord import ApplicationContext, Option
+import dotenv
 
 from lipoic.core.types.MemberApply import EventData
 
@@ -17,7 +18,8 @@ class DevCog(discord.Cog):
     @discord.slash_command(description="dev reload command", guild_only=True)
     async def reload(self, ctx: ApplicationContext):
         self.bot.load_cog_dir(__package__, __file__, deep=True, type="reload")
-        await ctx.respond("reload")
+        dotenv.load_dotenv(override=True)
+        await ctx.respond("reload", ephemeral=True)
 
     @discord.slash_command(description="call_apply", guild_only=True)
     async def test_apply(
