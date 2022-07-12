@@ -175,6 +175,7 @@ class ApplyView(View):
                 email=data.email,
                 date=data.time,
                 allow=False,
+                jobs=jobs,
             )
             if state := rank != 0 and _type == "PASS":
                 select_job = jobs[rank - 1]

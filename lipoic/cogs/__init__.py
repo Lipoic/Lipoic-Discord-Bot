@@ -1,3 +1,4 @@
+import os
 from typing import TYPE_CHECKING
 
 import discord
@@ -5,6 +6,7 @@ from discord import ApplicationContext, Option
 import dotenv
 
 from lipoic.core.types.MemberApply import EventData
+from lipoic import __config_path__
 
 
 if TYPE_CHECKING:
@@ -18,7 +20,8 @@ class DevCog(discord.Cog):
     @discord.slash_command(description="dev reload command", guild_only=True)
     async def reload(self, ctx: ApplicationContext):
         self.bot.load_cog_dir(__package__, __file__, deep=True, type="reload")
-        dotenv.load_dotenv(override=True)
+        dotenv.load_dotenv(dotenv_path=__config_path__ / ".env", override=True)
+        self.bot.load_config()
         await ctx.respond("reload", ephemeral=True)
 
     @discord.slash_command(description="call_apply", guild_only=True)

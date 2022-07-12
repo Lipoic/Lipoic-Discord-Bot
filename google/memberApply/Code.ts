@@ -38,29 +38,13 @@ export const doGet = (_event: GoogleAppsScript.Events.DoGet) => {
 };
 export const doPost = (event: GoogleAppsScript.Events.DoPost) => {
   try {
-    const data: postData = JSON.parse(event.postData.contents);
-    if (data.authorization !== TOKEN)
+    const _data: postData<boolean> = JSON.parse(event.postData.contents);
+    if (_data.authorization !== TOKEN)
       return ContentService.createTextOutput(JSON.stringify({ code: 403 }));
-    delete data.authorization;
-    if (data.allow) {
-      const template = HtmlService.createTemplateFromFile('failMail.html');
+    delete _data.authorization;
 
-      const formats = ['{0}', '{0} 和 {1}', '{0}、 {1} 和 {2}'];
-
-      template.data = {
-        ...data,
-        jobsStr: formats[data.jobs.length].replace(
-          /\{[0-9]+\}/g,
-          (str, id) => data.jobs?.[+id] || str
-        ),
-      };
-
-      MailApp.sendEmail({
-        bcc: data.email,
-        subject: 'Lipoic',
-        htmlBody: template.evaluate().getContent(),
-      });
-    } else {
+    if (_data.allow) {
+      const data = <postData<true>>_data;
       const template = HtmlService.createTemplateFromFile('mail.html');
 
       template.data = data;
@@ -68,6 +52,25 @@ export const doPost = (event: GoogleAppsScript.Events.DoPost) => {
       MailApp.sendEmail({
         bcc: data.email,
         subject: 'Lipoic 錄取通知書',
+        htmlBody: template.evaluate().getContent(),
+      });
+    } else {
+      let data = <postData<false>>_data;
+      const template = HtmlService.createTemplateFromFile('failMail.html');
+
+      const formats = ['{0}', '{0} 和 {1}', '{0}、 {1} 和 {2}'];
+
+      template.data = {
+        ...data,
+        jobsStr: formats[data.jobs.length - 1].replace(
+          /\{[0-9]+\}/g,
+          (str, id) => data.jobs?.[+id] || str
+        ),
+      };
+
+      MailApp.sendEmail({
+        bcc: _data.email,
+        subject: 'Lipoic',
         htmlBody: template.evaluate().getContent(),
       });
     }

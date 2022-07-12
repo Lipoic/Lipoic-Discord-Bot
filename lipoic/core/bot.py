@@ -45,11 +45,7 @@ class LIPOIC(discord.Bot):
         self.db.connect()
         self._uptime = None
         self.dev_user_ids: List[int] = set(kwargs.get("dev_user_ids", set()))
-        self.configs = {
-            "memberApplyServerUrl": os.getenv("MEMBER_APPLY_SERVER_URL"),
-            "memberApplyServerToken": os.getenv("MEMBER_APPLY_SERVER_TOKEN"),
-            "GOOGLE_SCRIPT_URL": os.getenv("GOOGLE_SCRIPT_URL"),
-        }
+        self.load_config()
 
         # Configs
 
@@ -71,6 +67,13 @@ class LIPOIC(discord.Bot):
         super().__init__(*args, **kwargs)
 
         self._is_ready = asyncio.Event()
+
+    def load_config(self):
+        self.configs = {
+            "memberApplyServerUrl": os.getenv("MEMBER_APPLY_SERVER_URL"),
+            "memberApplyServerToken": os.getenv("MEMBER_APPLY_SERVER_TOKEN"),
+            "GOOGLE_SCRIPT_URL": os.getenv("GOOGLE_SCRIPT_URL"),
+        }
 
     def get_cog(self, name: str, /) -> Optional[discord.Cog]:
         cog = super().get_cog(name)
@@ -188,8 +191,8 @@ class LIPOIC(discord.Bot):
     def add_cog(self, cog: discord.Cog, /, *, override=False):
         if not isinstance(cog, discord.Cog):
             raise RuntimeError(
-                f"The {cog.__class__.__name__} class is not a cog.",
-                f"class in the {cog.__module__}",
+                f"The {cog.__class__.__name__} class is not a cog."
+                f"class in the {cog.__module__}"
             )
 
         self.log.info(

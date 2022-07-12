@@ -64,9 +64,8 @@ class LogTimeRotatingFileHandler(BaseRotatingHandler):
         if self.markup:
             try:
                 record = copy.deepcopy(record)
-                # print("format record.msg", record.msg)
                 record.msg = Text.from_markup(record.msg)
-            except Exception as e:
+            except Exception as e:  # fix: aiohttp throw errors
                 log.debug(e)
 
         return (self.formatter or Formatter()).format(record)
