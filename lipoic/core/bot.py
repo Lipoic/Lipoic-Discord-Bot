@@ -1,3 +1,4 @@
+import inspect
 import json
 import yaml
 import platform
@@ -283,13 +284,18 @@ class LIPOIC(discord.Bot):
             except Exception as e:
                 self.log.error(e)
 
+    def fix_doc(self, *doc: str):
+        return inspect.cleandoc("\n".join(doc))
+
     def run(self, *args: Any, **kwargs: Any):
-        rich_output_message = ""
-        rich_output_message += (
-            f"[red]python version: {platform.python_version()}[/red]\n"
+        doc = self.fix_doc(
+            f"""
+            [red]python version: [/red][cyan]{platform.python_version()}[/cyan]
+            [red]py-cord version: [/red][cyan]{discord.__version__}[/cyan]
+            [red]bot version: [/red][cyan]{self.__version__}[/cyan]
+            """
         )
-        rich_output_message += f"[red]py-cord version: {discord.__version__}[/red]\n"
-        rich_output_message += f"[red]LIPOIC version: {self.__version__}[/red]\n"
+        [log.info(msg) for msg in doc.split("\n")]
 
         self.load_extension("lipoic.cogs.__init__")
         self.add_cog(MainEventsCog(self))

@@ -21,7 +21,7 @@ class MainEventsCog(discord.Cog):
             return
 
         bot._uptime = datetime.utcnow()
-        bot.log.info(bot.user)
+        bot.log.info(f"[cyan]{bot.user}[/cyan]")
         bot._is_ready.set()
 
     # TODO watermelon watch this, new apply user event

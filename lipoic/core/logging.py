@@ -1,13 +1,15 @@
 import re
+import copy
 from pathlib import Path
 from datetime import timedelta, datetime
 import logging
-from logging import LogRecord, Logger
+from logging import LogRecord, Logger, Formatter
 from logging.handlers import BaseRotatingHandler
 
 from typing import Optional, Union
 
 import rich
+from rich.text import Text
 from rich.theme import Style, Theme
 from rich.logging import RichHandler
 from rich.syntax import PygmentsSyntaxTheme
@@ -27,6 +29,7 @@ class LogTimeRotatingFileHandler(BaseRotatingHandler):
         self,
         filename: str,
         directory: Optional[StrPath] = None,
+        markup: bool = False,
         expired_interval: timedelta = timedelta(days=8),
         maxBytes: int = 1e6,
         backupCount: int = 5,
@@ -46,6 +49,7 @@ class LogTimeRotatingFileHandler(BaseRotatingHandler):
 
         self.filename = filename
         self.directory = directory
+        self.markup = markup
         self.interval_time = timedelta(days=1)
         self.expired_interval = expired_interval
         self.maxBytes = maxBytes
@@ -55,6 +59,13 @@ class LogTimeRotatingFileHandler(BaseRotatingHandler):
 
     def computeRollover(self) -> datetime:
         return datetime.today() - self.interval_time
+
+    def format(self, record: LogRecord):
+        if self.markup:
+            record = copy.deepcopy(record)
+            record.msg = Text.from_markup(record.getMessage())
+
+        return (self.formatter or Formatter()).format(record)
 
     def shouldRollover(self, record: LogRecord) -> bool:
         if self.stream is None:
@@ -167,6 +178,7 @@ def init_logging(level: int, directory: Optional[StrPath] = None) -> Logger:
         )
     )
     shell_handler = RichHandler(
+        markup=True,
         console=rich_console,
         tracebacks_theme=(PygmentsSyntaxTheme(MonokaiStyle)),
     )
@@ -175,6 +187,7 @@ def init_logging(level: int, directory: Optional[StrPath] = None) -> Logger:
 
     file_handler = LogTimeRotatingFileHandler(
         log.name,
+        markup=True,
         directory=directory,
     )
     file_handler.setLevel(logging.DEBUG)
