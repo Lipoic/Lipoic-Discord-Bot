@@ -51,7 +51,7 @@ export const doPost = (event: GoogleAppsScript.Events.DoPost) => {
 
       MailApp.sendEmail({
         bcc: data.email,
-        subject: 'Lipoic 錄取通知書',
+        subject: 'Lipoic 組織成員申請通知',
         htmlBody: template.evaluate().getContent(),
       });
     } else {
@@ -70,7 +70,7 @@ export const doPost = (event: GoogleAppsScript.Events.DoPost) => {
 
       MailApp.sendEmail({
         bcc: _data.email,
-        subject: 'Lipoic',
+        subject: 'Lipoic 組織成員申請通知',
         htmlBody: template.evaluate().getContent(),
       });
     }
