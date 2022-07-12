@@ -125,10 +125,10 @@ class MemberApplyCog(discord.Cog):
             ) as resp:
                 data = await resp.text(encoding="utf8")
                 try:
-                    print(data)
                     data = json.loads(data)
                 except KeyError:
                     ...
+                return data
 
 
 class ApplyView(View):
@@ -203,7 +203,19 @@ class ApplyView(View):
                 email_data.HR_DC_Name = f"{user.name}#{user.discriminator}"
                 email_data.check_code = code
 
-            await MemberApplyCog(self.bot).send_apply_member_email(email_data)
+            msg = await channel.send("發送 email 中...")
+
+            try:
+                code = (
+                    await MemberApplyCog(self.bot).send_apply_member_email(email_data)
+                )["code"]
+                if str(code) != "200":
+                    raise Exception()
+            except:
+                await msg.edit(f"email 發送失敗，<@&{self.bot.hr_role_id}>")
+            else:
+                await msg.edit("email 發送完成", delete_after=60)
+
             return await channel.edit(
                 name=f"{'✅' if state else '❌'} {channel.name}",
                 archived=True,
