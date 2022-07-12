@@ -63,7 +63,7 @@ class LogTimeRotatingFileHandler(BaseRotatingHandler):
     def format(self, record: LogRecord):
         if self.markup:
             record = copy.deepcopy(record)
-            record.msg = Text.from_markup(record.getMessage())
+            record.msg = Text.from_markup(record.msg)
 
         return (self.formatter or Formatter()).format(record)
 
@@ -186,9 +186,7 @@ def init_logging(level: int, directory: Optional[StrPath] = None) -> Logger:
     shell_handler.setFormatter(shell_formatter)
 
     file_handler = LogTimeRotatingFileHandler(
-        log.name,
-        markup=True,
-        directory=directory,
+        log.name, markup=True, directory=directory, maxBytes=1024
     )
     file_handler.setLevel(logging.DEBUG)
     file_handler.setFormatter(file_formatter)
