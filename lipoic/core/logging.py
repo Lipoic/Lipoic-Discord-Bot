@@ -7,7 +7,6 @@ from logging import LogRecord, Logger, Formatter
 from logging.handlers import BaseRotatingHandler
 from typing import Optional, Union
 
-
 import rich
 from rich.text import Text
 from rich.theme import Style, Theme
