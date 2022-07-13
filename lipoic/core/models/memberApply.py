@@ -2,10 +2,10 @@ from typing import Optional, TypedDict, TYPE_CHECKING
 
 from playhouse.sqlite_ext import IntegerField, TextField, JSONField
 
+from . import BaseModel
+
 if TYPE_CHECKING:
     from core.types.MemberApply import jobsType, EventData
-
-from . import BaseModel
 
 
 class MemberApply(BaseModel):

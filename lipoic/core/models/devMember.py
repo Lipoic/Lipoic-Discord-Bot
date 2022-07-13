@@ -1,6 +1,6 @@
 from typing import Optional, TypedDict, List
-from playhouse.sqlite_ext import IntegerField, TextField, JSONField
 
+from playhouse.sqlite_ext import IntegerField, TextField, JSONField
 
 from . import BaseModel
 

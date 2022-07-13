@@ -1,8 +1,8 @@
 import random
 from string import ascii_letters, digits
-from .models import DATABASE, getModels
-
 from typing import TYPE_CHECKING, Dict
+
+from .models import DATABASE, getModels
 
 if TYPE_CHECKING:
     from . import LIPOIC

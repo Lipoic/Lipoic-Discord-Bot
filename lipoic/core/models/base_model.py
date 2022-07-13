@@ -1,5 +1,6 @@
-from playhouse.sqlite_ext import SqliteDatabase, Model
 import pathlib
+
+from playhouse.sqlite_ext import SqliteDatabase, Model
 
 pathlib.Path("data").mkdir(parents=True, exist_ok=True)
 

@@ -1,19 +1,16 @@
-from typing import List
+from typing import List, TYPE_CHECKING
+
 import discord
 from discord import ApplicationContext, Option, Embed
 
-from typing import TYPE_CHECKING
-
+from lipoic import BaseCog
 
 if TYPE_CHECKING:
     from core.models import MemberType
     from core import LIPOIC
 
 
-class ChefCog(discord.Cog):
-    def __init__(self, bot: "LIPOIC"):
-        self.bot = bot
-
+class ChefCog(BaseCog):
     @discord.slash_command(description="chef", guild_only=True)
     async def chef(
         self,
@@ -22,7 +19,7 @@ class ChefCog(discord.Cog):
         message: Option(str, "電人的訊息", default=""),
     ):
         member: discord.Member = member
-        memberDb = self.bot.db.Member
+        memberDb = self.db.Member
 
         memberDb.insert(user_id=member.id, chef_count=1).on_conflict(
             conflict_target=[memberDb.user_id],
@@ -40,7 +37,7 @@ class ChefCog(discord.Cog):
 
     @discord.slash_command(description="電神排行榜", guild_only=True)
     async def chef_rank(self, ctx: ApplicationContext):
-        memberDb = self.bot.db.Member
+        memberDb = self.db.Member
 
         data: "List[MemberType]" = (
             memberDb.select().order_by(memberDb.chef_count.desc()).limit(10).execute()
@@ -60,5 +57,5 @@ class ChefCog(discord.Cog):
         )
 
 
-def setup(bot):
+def setup(bot: "LIPOIC"):
     bot.add_cog(ChefCog(bot))

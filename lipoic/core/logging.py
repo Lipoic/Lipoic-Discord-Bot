@@ -5,7 +5,6 @@ from datetime import timedelta, datetime
 import logging
 from logging import LogRecord, Logger, Formatter
 from logging.handlers import BaseRotatingHandler
-
 from typing import Optional, Union
 
 import rich

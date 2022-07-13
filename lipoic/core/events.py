@@ -1,19 +1,16 @@
 from datetime import datetime
+from typing import TYPE_CHECKING
+
 import discord
 from discord.ext import commands
 
-from typing import TYPE_CHECKING
+from lipoic import BaseCog
 
 if TYPE_CHECKING:
-    from core import LIPOIC
     from .types.MemberApply import EventData
 
 
-class MainEventsCog(discord.Cog):
-    def __init__(self, bot: "LIPOIC") -> None:
-        self.bot = bot
-        self.log = bot.log
-
+class MainEventsCog(BaseCog):
     @discord.Cog.listener()
     async def on_ready(self):
         bot = self.bot

@@ -1,5 +1,7 @@
 import inspect
 import json
+from typing import TYPE_CHECKING, Any, Literal, Optional
+
 import aiohttp
 import discord
 from discord import (
@@ -13,8 +15,7 @@ from discord import (
 )
 from discord.ui import View, Button, Item
 
-from typing import TYPE_CHECKING, Any, Literal, Optional
-
+from lipoic import BaseCog
 from lipoic.core.types.MemberApply import EventData
 
 if TYPE_CHECKING:
@@ -43,13 +44,10 @@ class MemberApplyEmailData:
     allow: bool
 
 
-class MemberApplyCog(discord.Cog):
-    def __init__(self, bot: "LIPOIC"):
-        self.bot = bot
-
+class MemberApplyCog(BaseCog):
     @discord.Cog.listener()
     async def on_new_apply(self, data: EventData):
-        applyDB = self.bot.db.MemberApply
+        applyDB = self.db.MemberApply
         jobs = data.jobs
 
         apply_channel: TextChannel = self.bot.get_channel(self.bot.apply_channel_id)
@@ -90,7 +88,7 @@ class MemberApplyCog(discord.Cog):
 
     @discord.slash_command(description="apply", guild_only=True)
     async def apply(self, ctx: ApplicationContext, code: Option(str, "申請驗證碼")):
-        applyDB = self.bot.db.MemberApply
+        applyDB = self.db.MemberApply
         apply: MemberApply = applyDB.get_or_none(applyDB.code == code)
         if apply:
             member_role = ctx.guild.get_role(self.bot.member_role_id)
@@ -272,5 +270,5 @@ class ApplyView(View):
         return stage_fail
 
 
-def setup(bot):
+def setup(bot: "LIPOIC"):
     bot.add_cog(MemberApplyCog(bot))

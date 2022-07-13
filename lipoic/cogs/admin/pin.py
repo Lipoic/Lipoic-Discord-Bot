@@ -1,16 +1,15 @@
+from typing import TYPE_CHECKING
+
 import discord
 from discord import ApplicationContext, Option, Embed, Member
 
-from typing import TYPE_CHECKING
+from lipoic import BaseCog
 
 if TYPE_CHECKING:
     from core import LIPOIC
 
 
-class PinCog(discord.Cog):
-    def __init__(self, bot: "LIPOIC"):
-        self.bot = bot
-
+class PinCog(BaseCog):
     @discord.slash_command(description="Pin Message", guild_only=True)
     async def pin(
         self,
@@ -43,5 +42,5 @@ class PinCog(discord.Cog):
         await ctx.respond(embed=embed, ephemeral=True)
 
 
-def setup(bot):
+def setup(bot: "LIPOIC"):
     bot.add_cog(PinCog(bot))
