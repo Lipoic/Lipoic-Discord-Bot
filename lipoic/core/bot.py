@@ -1,3 +1,4 @@
+import inspect
 import json
 import yaml
 import platform
@@ -44,13 +45,11 @@ class LIPOIC(discord.Bot):
         self.db.connect()
         self._uptime = None
         self.dev_user_ids: List[int] = set(kwargs.get("dev_user_ids", set()))
-        self.configs = {
-            "memberApplyServerUrl": os.getenv("MEMBER_APPLY_SERVER_URL"),
-            "memberApplyServerToken": os.getenv("MEMBER_APPLY_SERVER_TOKEN"),
-        }
+        self.load_config()
 
         # Configs
-        config_file = __config_path__ / "config.yml"
+
+        config_file = __config_path__ / f"config{'.dev' if self.debug else ''}.yml"
 
         if not config_file.exists():
             with open(__base_dir__ / "data" / "config.yml", "r", encoding="utf8") as f:
@@ -68,6 +67,13 @@ class LIPOIC(discord.Bot):
         super().__init__(*args, **kwargs)
 
         self._is_ready = asyncio.Event()
+
+    def load_config(self):
+        self.configs = {
+            "memberApplyServerUrl": os.getenv("MEMBER_APPLY_SERVER_URL"),
+            "memberApplyServerToken": os.getenv("MEMBER_APPLY_SERVER_TOKEN"),
+            "GOOGLE_SCRIPT_URL": os.getenv("GOOGLE_SCRIPT_URL"),
+        }
 
     def get_cog(self, name: str, /) -> Optional[discord.Cog]:
         cog = super().get_cog(name)
@@ -185,8 +191,8 @@ class LIPOIC(discord.Bot):
     def add_cog(self, cog: discord.Cog, /, *, override=False):
         if not isinstance(cog, discord.Cog):
             raise RuntimeError(
-                f"The {cog.__class__.__name__} class is not a cog.",
-                f"class in the {cog.__module__}",
+                f"The {cog.__class__.__name__} class is not a cog."
+                f"class in the {cog.__module__}"
             )
 
         self.log.info(
@@ -281,13 +287,18 @@ class LIPOIC(discord.Bot):
             except Exception as e:
                 self.log.error(e)
 
+    def fix_doc(self, *doc: str):
+        return inspect.cleandoc("\n".join(doc))
+
     def run(self, *args: Any, **kwargs: Any):
-        rich_output_message = ""
-        rich_output_message += (
-            f"[red]python version: {platform.python_version()}[/red]\n"
+        doc = self.fix_doc(
+            f"""
+            [red]python version: [/red][cyan]{platform.python_version()}[/cyan]
+            [red]py-cord version: [/red][cyan]{discord.__version__}[/cyan]
+            [red]bot version: [/red][cyan]{self.__version__}[/cyan]
+            """
         )
-        rich_output_message += f"[red]py-cord version: {discord.__version__}[/red]\n"
-        rich_output_message += f"[red]LIPOIC version: {self.__version__}[/red]\n"
+        [log.info(msg) for msg in doc.split("\n")]
 
         self.load_extension("lipoic.cogs.__init__")
         self.add_cog(MainEventsCog(self))

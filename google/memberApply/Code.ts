@@ -33,7 +33,57 @@ export const onFormSubmit = (
     headers: { Authorization: TOKEN },
   });
 };
+export const doGet = (_event: GoogleAppsScript.Events.DoGet) => {
+  return ContentService.createTextOutput(JSON.stringify({ code: 405 }));
+};
+export const doPost = (event: GoogleAppsScript.Events.DoPost) => {
+  try {
+    const _data: postData<boolean> = JSON.parse(event.postData.contents);
+    if (_data.authorization !== TOKEN)
+      return ContentService.createTextOutput(JSON.stringify({ code: 403 }));
+    delete _data.authorization;
 
+    if (_data.allow) {
+      const data = <postData<true>>_data;
+      const template = HtmlService.createTemplateFromFile('mail.html');
+
+      template.data = data;
+
+      MailApp.sendEmail({
+        bcc: data.email,
+        subject: 'Lipoic 組織成員申請通知',
+        htmlBody: template.evaluate().getContent(),
+      });
+    } else {
+      let data = <postData<false>>_data;
+      const template = HtmlService.createTemplateFromFile('failMail.html');
+
+      const formats = ['{0}', '{0} 和 {1}', '{0}、 {1} 和 {2}'];
+
+      template.data = {
+        ...data,
+        jobsStr: formats[data.jobs.length - 1].replace(
+          /\{[0-9]+\}/g,
+          (str, id) => data.jobs?.[+id] || str
+        ),
+      };
+
+      MailApp.sendEmail({
+        bcc: _data.email,
+        subject: 'Lipoic 組織成員申請通知',
+        htmlBody: template.evaluate().getContent(),
+      });
+    }
+    return ContentService.createTextOutput(
+      JSON.stringify({
+        code: 200,
+        remaining: MailApp.getRemainingDailyQuota(),
+      })
+    );
+  } catch {
+    return ContentService.createTextOutput(JSON.stringify({ code: 400 }));
+  }
+};
 export enum jobEnum {
   '美術 - 網站界面設計',
   '美術 - 海報、文宣設計',
@@ -67,4 +117,19 @@ export interface formData {
   '我想參與的職務 (第三順位，選填)'?: [jobsType];
   備註?: [string];
   時間戳記: [string];
+}
+
+export interface postData<A extends boolean = false> {
+  /** send to {email} */
+  email: string;
+  date: string;
+  jobs: A extends false ? jobsType[] : undefined;
+  team: A extends true ? string : undefined;
+  position: A extends true ? string : undefined;
+  HR_DC_Id: A extends true ? string : undefined;
+  HR_DC_Name: A extends true ? string : undefined;
+  check_code: A extends true ? string : undefined;
+  allow: A;
+  /** token */
+  authorization: string;
 }

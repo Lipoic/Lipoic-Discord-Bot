@@ -1,5 +1,6 @@
 {
-    "include": [
-        "./**/*.ts",
-    ],
+  "include": ["./**/*.ts"],
+  "compilerOptions": {
+    "lib": ["es2020"]
+  }
 }

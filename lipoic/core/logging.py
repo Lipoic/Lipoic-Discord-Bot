@@ -1,148 +1,167 @@
-import datetime
-import logging
-from logging import handlers
-import pathlib
 import re
-from typing import Iterable, List, Optional, Tuple, Union
+import copy
+from pathlib import Path
+from datetime import timedelta, datetime
+import logging
+from logging import LogRecord, Logger, Formatter
+from logging.handlers import BaseRotatingHandler
+
+from typing import Optional, Union
 
 import rich
-from pygments.styles.monokai import MonokaiStyle
-from pygments.token import (
-    Comment,
-    Error,
-    Keyword,
-    Name,
-    Number,
-    Operator,
-    String,
-    Token,
-)
-from rich._log_render import FormatTimeCallable, LogRender
-from rich.console import ConsoleRenderable
-from rich.highlighter import NullHighlighter
-from rich.logging import RichHandler
-from rich.syntax import ANSISyntaxTheme, PygmentsSyntaxTheme
-from rich.text import Text, TextType
+from rich.text import Text
 from rich.theme import Style, Theme
-
-MAX_OLD_LOGS = 8
-
-SYNTAX_THEME = {
-    Token: Style(),
-    Comment: Style(color="bright_black"),
-    Keyword: Style(color="cyan", bold=True),
-    Keyword.Constant: Style(color="bright_magenta"),
-    Keyword.Namespace: Style(color="bright_red"),
-    Operator: Style(bold=True),
-    Operator.Word: Style(color="cyan", bold=True),
-    Name.Builtin: Style(bold=True),
-    Name.Builtin.Pseudo: Style(color="bright_red"),
-    Name.Exception: Style(bold=True),
-    Name.Class: Style(color="bright_green"),
-    Name.Function: Style(color="bright_green"),
-    String: Style(color="yellow"),
-    Number: Style(color="cyan"),
-    Error: Style(bgcolor="red"),
-}
+from rich.logging import RichHandler
+from rich.syntax import PygmentsSyntaxTheme
+from pygments.styles.monokai import MonokaiStyle
 
 
-class RotatingFileHandler(handlers.RotatingFileHandler):
+log = logging.getLogger("lipoic")
+StrPath = Union[Path, str]
+
+
+class LogTimeRotatingFileHandler(BaseRotatingHandler):
+    """
+    from logging mode Modify
+    """
+
     def __init__(
         self,
-        name: str,
-        directory: Optional[pathlib.Path] = None,
-        maxBytes: int = 0,
-        backupCount: int = 0,
+        filename: str,
+        directory: Optional[StrPath] = None,
+        markup: bool = False,
+        expired_interval: timedelta = timedelta(days=8),
+        maxBytes: int = 1e6,
+        backupCount: int = 5,
         encoding: str = "utf-8",
-    ):
-        self.baseName = name
-        self.directory = directory
-        log_part_re = re.compile(rf"{name}-part(?P<part>\d)\.log")
-        highest_part = 0
-        for file in directory.iterdir():
-            match = log_part_re.match(file.name)
-            if match and int(match["part"]) > highest_part:
-                highest_part = int(match["part"])
-        if highest_part:
-            filename = directory / f"{name}-part{highest_part}.log"
-        else:
-            filename = directory / f"{name}.log"
+    ) -> None:
+        directory = Path(directory or Path("logs"))
+        directory.mkdir(parents=True, exist_ok=True)
+
+        filepath = directory / f"{filename}.log"
+
         super().__init__(
-            filename,
+            filepath,
             mode="a",
-            maxBytes=maxBytes,
-            backupCount=backupCount,
             encoding=encoding,
             delay=False,
         )
 
+        self.filename = filename
+        self.directory = directory
+        self.markup = markup
+        self.interval_time = timedelta(days=1)
+        self.expired_interval = expired_interval
+        self.maxBytes = maxBytes
+        self.backupCount = backupCount
 
-class LipoicLogRender(LogRender):
-    def __call__(
-        self,
-        console: "rich.Console",
-        renderables: Iterable["ConsoleRenderable"],
-        log_time: Optional[datetime.datetime] = None,
-        time_format: Optional[Union[str, FormatTimeCallable]] = None,
-        level: TextType = "",
-        path: Optional[str] = None,
-        line_no: Optional[int] = None,
-        link_path: Optional[str] = None,
-        logger_name: Optional[str] = None,
-    ):
-        output = Text()
-        if self.show_time:
-            log_time = log_time or console.get_datetime()
-            log_time_display = log_time.strftime(time_format or self.time_format)
-            if log_time_display == self._last_time:
-                output.append(" " * (len(log_time_display) + 1))
-            else:
-                output.append(f"{log_time_display} ", style="log.time")
-                self._last_time = log_time_display
-        if self.show_level:
-            output.append(level)
-            output.append(" ")
-        if logger_name:
-            output.append(f"[{logger_name}] ", style="bright_black")
+        self.rolloverAt = self.computeRollover()
 
-        output.append(*renderables)
-        if self.show_path and path:
-            path_text = Text()
-            path_text.append(
-                path, style=f"link file://{link_path}" if link_path else ""
-            )
-            if line_no:
-                path_text.append(f":{line_no}")
-            output.append(path_text)
-        return output
+    def computeRollover(self) -> datetime:
+        return datetime.today() - self.interval_time
 
+    def format(self, record: LogRecord):
+        if self.markup:
+            try:
+                record = copy.deepcopy(record)
+                record.msg = Text.from_markup(record.msg)
+            except Exception as e:  # fix: aiohttp throw errors
+                log.debug(e)
 
-class LipoicRichHandler(RichHandler):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self._log_render = LipoicLogRender(
-            show_time=self._log_render.show_time,
-            show_level=self._log_render.show_level,
-            show_path=self._log_render.show_path,
-            level_width=self._log_render.level_width,
+        return (self.formatter or Formatter()).format(record)
+
+    def shouldRollover(self, record: LogRecord) -> bool:
+        if self.stream is None:
+            self.stream = self._open()
+        if self.rolloverAt >= datetime.today():
+            return True
+
+        if self.maxBytes > 0:
+            self.stream.seek(0, 2)
+            if self.stream.tell() + len(f"{record.msg}\n") >= self.maxBytes:
+                return True
+
+        return False
+
+    def delete_expired_logs(self) -> None:
+        file_time_re = re.compile(
+            rf"{self.filename}\-"
+            r"(?P<time>\d{4}\-\d{2}\-\d{2})"
+            r"(\.(?P<part>\d))?\.log"
         )
+        end_time = datetime.today() - self.expired_interval
+
+        for file in self.directory.iterdir():
+            if (match := file_time_re.match(file.name)) and datetime.strptime(
+                match.groupdict()["time"], "%Y-%m-%d"
+            ) < end_time:
+                log.info(f"Deleting old log file: {file.name}")
+                file.unlink(missing_ok=True)
+
+    def get_file_name(
+        self,
+        filename: Optional[Union[str, object]] = None,
+        *,
+        base_file: bool = True,
+        time: bool = True,
+        time_str: Optional[str] = None,
+    ) -> Path:
+        filenames = []
+
+        if base_file:
+            filenames.append(str(self.filename))
+        if time and time_str is not None:
+            filenames.append(
+                datetime.now().strftime("%Y-%m-%d") if time_str is None else time_str
+            )
+        if filename:
+            filenames.append(str(filename))
+
+        return self.directory / f"{'.'.join(filenames)}.log"
+
+    def doRollover(self) -> bool:
+        if self.stream:
+            self.stream.close()
+            self.stream = None
+
+        if self.rolloverAt >= datetime.today():
+            for i in range(self.backupCount, 0, -1):
+                if (old_file := self.get_file_name(i, time=False)).exists():
+                    old_file.rename(
+                        self.get_file_name(
+                            i, time_str=self.rolloverAt.strftime("%Y-%m-%d")
+                        )
+                    )
+            self.rolloverAt = self.computeRollover()
+            return self.delete_expired_logs()
+
+        if self.backupCount > 0:
+            self.get_file_name(self.backupCount, time=False).unlink(missing_ok=True)
+            for i in range(self.backupCount - 1, 0, -1):
+                if (old_file := self.get_file_name(i, time=False)).exists():
+                    old_file.rename(self.get_file_name(i + 1, time=False))
+            (base_file := self.get_file_name(time=False)).rename(
+                base_file.with_suffix(".1.log")
+            )
+
+        self.stream = self._open()
 
 
-def init_logging(level: int, location: Optional[pathlib.Path] = None) -> None:
-    location = location or pathlib.Path() / "logs"
-
-    root_logger = logging.getLogger()
-    base_logger = logging.getLogger("lipoic")
+def init_logging(level: int, directory: Optional[StrPath] = None) -> Logger:
     dpy_logger = logging.getLogger("discord")
     warnings_logger = logging.getLogger("py.warnings")
 
-    base_logger.setLevel(level)
+    log.setLevel(level)
     dpy_logger.setLevel(logging.WARNING)
     warnings_logger.setLevel(logging.WARNING)
 
+    shell_formatter = logging.Formatter("{message}", datefmt="[%X]", style="{")
+    file_formatter = logging.Formatter(
+        "[{asctime}] [{levelname}:{name}]: {message}",
+        datefmt="%Y-%m-%d %H:%M:%S",
+        style="{",
+    )
     rich_console = rich.get_console()
-    rich.reconfigure(tab_size=2)
-
     rich_console.push_theme(
         Theme(
             {
@@ -153,68 +172,30 @@ def init_logging(level: int, location: Optional[pathlib.Path] = None) -> None:
                 "logging.level.trace": Style(color="white", italic=True, dim=True),
                 "repr.number": Style(color="cyan"),
                 "repr.url": Style(
-                    underline=True, italic=True, bold=False, color="cyan"
+                    underline=True,
+                    italic=True,
+                    bold=False,
+                    color="cyan",
                 ),
             }
         )
     )
-
-    file_formatter = logging.Formatter(
-        "[{asctime}] [{levelname}] {name}: {message}",
-        datefmt="%Y-%m-%d %H:%M:%S",
-        style="{",
+    shell_handler = RichHandler(
+        markup=True,
+        console=rich_console,
+        tracebacks_theme=(PygmentsSyntaxTheme(MonokaiStyle)),
     )
+    shell_handler.setLevel(logging.DEBUG)
+    shell_handler.setFormatter(shell_formatter)
 
-    rich_formatter = logging.Formatter("{message}", datefmt="[%X]", style="{")
-    stdout_handler = LipoicRichHandler(
-        rich_tracebacks=True,
-        show_path=False,
-        highlighter=NullHighlighter(),
-        tracebacks_theme=(
-            PygmentsSyntaxTheme(MonokaiStyle)
-            if rich_console.color_system == "truecolor"
-            else ANSISyntaxTheme(SYNTAX_THEME)
-        ),
+    file_handler = LogTimeRotatingFileHandler(
+        log.name, markup=True, directory=directory
     )
-    stdout_handler.setFormatter(rich_formatter)
+    file_handler.setLevel(logging.DEBUG)
+    file_handler.setFormatter(file_formatter)
 
-    root_logger.addHandler(stdout_handler)
-    logging.captureWarnings(True)
+    root_logger = logging.getLogger()
+    root_logger.addHandler(file_handler)
+    root_logger.addHandler(shell_handler)
 
-    if not location.exists():
-        location.mkdir(parents=True, exist_ok=True)
-
-    previous_logs: List[pathlib.Path] = []
-    latest_logs: List[Tuple[pathlib.Path, str]] = []
-
-    for path in location.iterdir():
-        match = re.match(r"latest(?P<part>-part\d+)?\.log", path.name)
-        if match:
-            part = match.groupdict(default="")["part"]
-            latest_logs.append((path, part))
-        match = re.match(r"previous(?:-part\d+)?.log", path.name)
-        if match:
-            previous_logs.append(path)
-
-    for path in previous_logs:
-        path.unlink()
-
-    for path, part in latest_logs:
-        path.replace(location / f"previous{part}.log")
-
-    latest = RotatingFileHandler(
-        "latest",
-        directory=location,
-        maxBytes=1e6,
-        backupCount=MAX_OLD_LOGS,
-    )
-    all = RotatingFileHandler(
-        "lipoic",
-        directory=location,
-        maxBytes=1e6,
-        backupCount=MAX_OLD_LOGS,
-    )
-
-    for handler in (latest, all):
-        handler.setFormatter(file_formatter)
-        root_logger.addHandler(handler)
+    return log

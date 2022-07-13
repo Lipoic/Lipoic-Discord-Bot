@@ -1,4 +1,6 @@
 import inspect
+import json
+import aiohttp
 import discord
 from discord import (
     ChannelType,
@@ -11,13 +13,34 @@ from discord import (
 )
 from discord.ui import View, Button, Item
 
-from typing import TYPE_CHECKING, Literal
+from typing import TYPE_CHECKING, Any, Literal, Optional
 
 from lipoic.core.types.MemberApply import EventData
 
 if TYPE_CHECKING:
     from lipoic.core import LIPOIC
     from lipoic.core.models import MemberApply
+
+
+class MemberApplyEmailData:
+    def __init__(self, **kwargs: Any):
+        for k, v in kwargs.items():
+            setattr(self, k, v)
+
+    def __iter__(self):
+        iters = dict((x, y) for x, y in self.__dict__.items() if x[:2] != "__")
+
+        for x, y in iters.items():
+            yield x, y
+
+    email: str
+    date: str
+    team: Optional[str]
+    position: Optional[str]
+    HR_DC_Id: Optional[str]
+    HR_DC_Name: Optional[str]
+    check_code: Optional[str]
+    allow: bool
 
 
 class MemberApplyCog(discord.Cog):
@@ -91,6 +114,22 @@ class MemberApplyCog(discord.Cog):
     async def on_ready(self):
         self.bot.add_view(ApplyView(self.bot))
 
+    async def send_apply_member_email(self, data: MemberApplyEmailData):
+        async with aiohttp.ClientSession(loop=self.bot.loop) as session:
+            async with session.post(
+                self.bot.configs["GOOGLE_SCRIPT_URL"],
+                json={
+                    "authorization": self.bot.configs["memberApplyServerToken"],
+                    **dict(data),
+                },
+            ) as resp:
+                data = await resp.text(encoding="utf8")
+                try:
+                    data = json.loads(data)
+                except KeyError:
+                    ...
+                return data
+
 
 class ApplyView(View):
     def __init__(self, bot: "LIPOIC"):
@@ -132,6 +171,12 @@ class ApplyView(View):
             await message.edit(
                 view=View(Button(style=ButtonStyle.gray, label="面試已結束", disabled=True))
             )
+            email_data = MemberApplyEmailData(
+                email=data.email,
+                date=data.time,
+                allow=False,
+                jobs=jobs,
+            )
             if state := rank != 0 and _type == "PASS":
                 select_job = jobs[rank - 1]
                 applyDB.update(pass_job=select_job).where(
@@ -150,6 +195,27 @@ class ApplyView(View):
                 embed.add_field(name="通過職位", value=f"```{select_job}```", inline=False)
                 embed.add_field(name="驗證碼", value=f"`{code}`", inline=False)
                 await channel.send(embed=embed)
+                user = await self.bot.get_or_fetch_user(allow_users[0])
+                email_data.allow = True
+                email_data.team = select_job[:2]
+                email_data.position = select_job
+                email_data.HR_DC_Id = user.name
+                email_data.HR_DC_Name = f"{user.name}#{user.discriminator}"
+                email_data.check_code = code
+
+            msg = await channel.send("發送 email 中...")
+
+            try:
+                code = (
+                    await MemberApplyCog(self.bot).send_apply_member_email(email_data)
+                )["code"]
+                if str(code) != "200":
+                    raise Exception()
+            except:
+                await msg.edit(f"email 發送失敗，<@&{self.bot.hr_role_id}>")
+            else:
+                await msg.edit("email 發送完成", delete_after=60)
+
             return await channel.edit(
                 name=f"{'✅' if state else '❌'} {channel.name}",
                 archived=True,
