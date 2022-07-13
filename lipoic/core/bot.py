@@ -1,24 +1,22 @@
-import inspect
+import os
 import json
 import yaml
-import platform
-import aiohttp
-
-from .types.MemberApply import EventData
-
-from lipoic import __version__, __config_path__, __base_dir__
-from typing import Any, Dict, List, Callable, Coroutine, Literal, Optional, Union
-import logging
-
-import os
-import discord
 import asyncio
+import inspect
+import logging
+import platform
+from typing import Any, Dict, List, Callable, Coroutine, Literal, Optional, Union
 
+import aiohttp
+import discord
 
 from .db import DB
 from .events import MainEventsCog
+from .types.MemberApply import EventData
+from lipoic import BaseCog
+from lipoic import __version__, __config_path__, __base_dir__
 
-__all__ = ["LIPOIC"]
+__all__ = ("LIPOIC",)
 log = logging.getLogger("lipoic")
 loadCogType = Literal["load", "reload", "unload"]
 CoreFuncType = Callable[..., Coroutine[Any, Any, Any]]
@@ -194,6 +192,9 @@ class LIPOIC(discord.Bot):
                 f"The {cog.__class__.__name__} class is not a cog."
                 f"class in the {cog.__module__}"
             )
+
+        if isinstance(cog, BaseCog) and cog.__cog_dev__ and not self.debug:
+            return
 
         self.log.info(
             f"load {cog.__class__.__name__} class in the {cog.__module__}",

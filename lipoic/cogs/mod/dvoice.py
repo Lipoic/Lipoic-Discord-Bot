@@ -1,20 +1,16 @@
-import discord
-import peewee
-from discord import ApplicationContext, Option, OptionChoice, Embed
-
-
 from typing import TYPE_CHECKING
 
+import peewee
+import discord
+from discord import ApplicationContext, Option, OptionChoice, Embed
+
+from lipoic import BaseCog
 
 if TYPE_CHECKING:
-    from core import DvcType
-    from core import LIPOIC
+    from core import DvcType, LIPOIC
 
 
-class DynamicVoiceCog(discord.Cog):
-    def __init__(self, bot: "LIPOIC") -> None:
-        self.bot = bot
-
+class DynamicVoiceCog(BaseCog):
     @discord.Cog.listener()
     async def on_voice_state_update(
         self,
@@ -22,7 +18,7 @@ class DynamicVoiceCog(discord.Cog):
         before: discord.VoiceState,
         after: discord.VoiceState,
     ):
-        Dvc = self.bot.db.Dvc
+        Dvc = self.db.Dvc
 
         if after.channel and after.channel.id in self.bot.dvc_ids:
             try:
@@ -49,7 +45,7 @@ class DynamicVoiceCog(discord.Cog):
         ctx: ApplicationContext,
         mode: Option(str, "選擇模式", choices=[OptionChoice("help"), OptionChoice("fix")]),
     ):
-        Dvc = self.bot.db.Dvc
+        Dvc = self.db.Dvc
         if mode == "help":
             dvcChannels = "\n".join(
                 [

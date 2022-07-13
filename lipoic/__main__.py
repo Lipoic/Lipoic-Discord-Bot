@@ -1,7 +1,8 @@
-import argparse
-import logging
 import os
+import logging
+import argparse
 from typing import NamedTuple, Optional
+
 import dotenv
 
 if __name__ == "__main__":

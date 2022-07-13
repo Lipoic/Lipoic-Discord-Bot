@@ -1,19 +1,17 @@
-from typing import List
-import discord
-from discord import ApplicationContext, Option
-from discord.ext import commands
 import datetime
+from typing import List, TYPE_CHECKING
 
-from typing import TYPE_CHECKING
+import discord
+from discord.ext import commands
+from discord import ApplicationContext, Option
+
+from lipoic import BaseCog
 
 if TYPE_CHECKING:
     from core import LIPOIC
 
 
-class MuteCog(discord.Cog):
-    def __init__(self, bot: "LIPOIC"):
-        self.bot = bot
-
+class MuteCog(BaseCog):
     @commands.has_permissions(moderate_members=True)
     @discord.slash_command(description="Mute Member", guild_only=True)
     async def mute(
@@ -58,5 +56,5 @@ class MuteCog(discord.Cog):
         await ctx.respond(embed=embed, ephemeral=True)
 
 
-def setup(bot):
+def setup(bot: "LIPOIC"):
     bot.add_cog(MuteCog(bot))

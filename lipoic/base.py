@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Any, Type, TypeVar
+from typing import TYPE_CHECKING, Any, ClassVar, Type, TypeVar
 
 import discord
 
@@ -10,23 +10,21 @@ __all__ = ("BaseCog",)
 CogT = TypeVar("CogT", bound="BaseCog")
 
 
-class BaseCog(discord.Cog):
+class BaseCogMeta(discord.CogMeta):
     __cog_dev__: bool
+
+    def __new__(cls: Type[CogT], *args: Any, **kwargs: Any) -> CogT:
+        name, base, attrs = args
+
+        attrs["__cog_dev__"] = kwargs.pop("dev", False)
+
+        return super().__new__(cls, name, base, attrs, **kwargs)
+
+
+class BaseCog(discord.Cog, metaclass=BaseCogMeta):
+    __cog_dev__: ClassVar[bool]
 
     def __init__(self, bot: "LIPOIC") -> None:
         self.bot = bot
         self.db = bot.db
         self.log = bot.log
-
-    def __new__(cls: Type[CogT], *args: Any, **kwargs: Any) -> CogT:
-        dev = kwargs.pop("dev", False)
-
-        new_cls = super().__new__(cls, *args, **kwargs)
-
-        new_cls.__cog_dev__ = dev
-
-        return new_cls
-
-    @property
-    def dev(self) -> bool:
-        return self.__cog_dev__

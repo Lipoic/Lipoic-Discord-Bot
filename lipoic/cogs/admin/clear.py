@@ -1,17 +1,16 @@
+from typing import TYPE_CHECKING
+
 import discord
 from discord.ext import commands
 from discord import Embed, ApplicationContext, Option
 
-from typing import TYPE_CHECKING
+from lipoic import BaseCog
 
 if TYPE_CHECKING:
     from core import LIPOIC
 
 
-class ClearCog(discord.Cog):
-    def __init__(self, bot: "LIPOIC"):
-        self.bot = bot
-
+class ClearCog(BaseCog):
     @commands.has_permissions(manage_messages=True)
     @discord.slash_command(description="Delete Message", guild_only=True)
     async def delete(

@@ -1,22 +1,18 @@
-import os
 from typing import TYPE_CHECKING
 
+import dotenv
 import discord
 from discord import ApplicationContext, Option
-import dotenv
 
+from lipoic import __config_path__, BaseCog
 from lipoic.core.types.MemberApply import EventData
-from lipoic import __config_path__
 
 
 if TYPE_CHECKING:
     from core import LIPOIC
 
 
-class DevCog(discord.Cog):
-    def __init__(self, bot: "LIPOIC"):
-        self.bot = bot
-
+class DevCog(BaseCog, dev=True):
     @discord.slash_command(description="dev reload command", guild_only=True)
     async def reload(self, ctx: ApplicationContext):
         self.bot.load_cog_dir(__package__, __file__, deep=True, type="reload")
@@ -47,6 +43,5 @@ class DevCog(discord.Cog):
 
 
 def setup(bot: "LIPOIC"):
-    if bot.debug:
-        bot.add_cog(DevCog(bot))
+    bot.add_cog(DevCog(bot))
     bot.load_cog_dir(__package__, __file__, deep=True)

@@ -1,6 +1,6 @@
 from typing import TypedDict
-from playhouse.sqlite_ext import IntegerField
 
+from playhouse.sqlite_ext import IntegerField
 
 from . import BaseModel
 
