@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "29de701b98754306107e679c1db0e45d6e9d08b2d48ef4ffb4b1c7504fd8f513"
+            "sha256": "7268785266930d733fcba2d29d7a845dcdadb4aa0263828c060870b95d401989"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -93,14 +93,6 @@
             ],
             "markers": "python_version >= '3.6'",
             "version": "==3.8.1"
-        },
-        "aiohttp-sse-client": {
-            "hashes": [
-                "sha256:42c81ee9213e9fc8bc412b063bac3a813e02e75250c4c8049222234d41c9b024",
-                "sha256:5004e29271624af586158dc7166cb0687a7a5997aab5b808f4b53400e1b72e3b"
-            ],
-            "index": "pypi",
-            "version": "==0.2.1"
         },
         "aiosignal": {
             "hashes": [
@@ -281,10 +273,10 @@
         },
         "peewee": {
             "hashes": [
-                "sha256:48eac70be812ac84daa5400fb8e7b545e0c83adcfa05c8e2a8612f9ced4da495"
+                "sha256:6d5db3babc33819ac326f1550e5a39677f4584094c567a7b88cc6bf7bcdcb687"
             ],
             "index": "pypi",
-            "version": "==3.15.0"
+            "version": "==3.15.1"
         },
         "py-cord": {
             "hashes": [
@@ -351,11 +343,11 @@
         },
         "rich": {
             "hashes": [
-                "sha256:4c586de507202505346f3e32d1363eb9ed6932f0c2f63184dea88983ff4971e2",
-                "sha256:d2bbd99c320a2532ac71ff6a3164867884357da3e3301f0240090c5d2fdac7ec"
+                "sha256:2eb4e6894cde1e017976d2975ac210ef515d7548bc595ba20e195fb9628acdeb",
+                "sha256:63a5c5ce3673d3d5fbbf23cd87e11ab84b6b451436f1b7f19ec54b6bc36ed7ca"
             ],
             "index": "pypi",
-            "version": "==12.4.4"
+            "version": "==12.5.1"
         },
         "yarl": {
             "hashes": [
