@@ -1,4 +1,4 @@
-from typing import List, Text, Literal, Optional, NamedTuple
+from typing import List, Text, Literal, Optional, NamedTuple, Union
 
 jobsType = Literal[
     "美術 - 網站界面設計",
@@ -30,7 +30,7 @@ class EventData(NamedTuple):
     # self introduction | 自介
     selfIntro: Text
     # identity | 身分
-    identity: identityType | Text
+    identity: Union[identityType, Text]
     # CV | 簡歷
     CV: Text
     # reason | 原因
