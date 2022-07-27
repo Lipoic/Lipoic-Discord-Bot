@@ -23,6 +23,7 @@ class Service(Protocol):
 
 async def start(loop: AbstractEventLoop):
     server = await loop.create_server(Service, "0.0.0.0", 8080)
+    log.info("start server")
     await server.wait_closed()
 
 
