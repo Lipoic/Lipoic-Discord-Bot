@@ -2,6 +2,7 @@ import os
 import logging
 import argparse
 from typing import NamedTuple, Optional
+from .server import create_server
 
 import dotenv
 
@@ -41,4 +42,5 @@ if __name__ == "__main__":
     dotenv.load_dotenv()
 
     bot = LIPOIC(debug=args.debug)
+    create_server(loop=bot.loop)
     bot.run(args.token or os.getenv("DISCORD_TOKEN"))
