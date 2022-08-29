@@ -20,5 +20,5 @@ jobs:
         docker build . --file Dockerfile --tag lipoicdc/discord-bot
         docker push lipoicdc/discord-bot
 
-        docker build . --file Dockerfile --tag lipoicdc/discord-bot:linux-arm64 --platform linux/arm64
+        docker build . --file Dockerfile.arm64 --tag lipoicdc/discord-bot:linux-arm64 --platform linux/arm64
         docker push lipoicdc/discord-bot:linux-arm64
