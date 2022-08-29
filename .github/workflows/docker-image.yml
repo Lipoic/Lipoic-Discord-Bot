@@ -1,0 +1,22 @@
+name: Docker Image CI
+
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Build the Docker image
+      run: |
+        docker login -u lipoicdiscord ${{ secrets.DOCKER_PUSH_TOKEN }}
+
+        docker build . --file Dockerfile --tag lipoicdiscord/discord-bot
+        docker push lipoicdiscord/discord-bot
+
+        docker build . --file Dockerfile --tag lipoicdiscord/discord-bot:linux-arm64 --platform linux/arm64
+        docker push lipoicdiscord/discord-bot:linux-arm64
