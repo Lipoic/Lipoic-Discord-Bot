@@ -12,8 +12,10 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: Build the Docker image
+      env:
+        DOCKER_PUSH_TOKEN: ${{ secrets.DOCKER_PUSH_TOKEN }}
       run: |
-        docker login -u lipoicdc ${{ secrets.DOCKER_PUSH_TOKEN }}
+        docker login -u lipoicdc "$DOCKER_PUSH_TOKEN"
 
         docker build . --file Dockerfile --tag lipoicdc/discord-bot
         docker push lipoicdc/discord-bot
