@@ -13,10 +13,10 @@ jobs:
     - uses: actions/checkout@v3
     - name: Build the Docker image
       run: |
-        docker login -u lipoicdiscord ${{ secrets.DOCKER_PUSH_TOKEN }}
+        docker login -u lipoicdc ${{ secrets.DOCKER_PUSH_TOKEN }}
 
-        docker build . --file Dockerfile --tag lipoicdiscord/discord-bot
-        docker push lipoicdiscord/discord-bot
+        docker build . --file Dockerfile --tag lipoicdc/discord-bot
+        docker push lipoicdc/discord-bot
 
-        docker build . --file Dockerfile --tag lipoicdiscord/discord-bot:linux-arm64 --platform linux/arm64
-        docker push lipoicdiscord/discord-bot:linux-arm64
+        docker build . --file Dockerfile --tag lipoicdc/discord-bot:linux-arm64 --platform linux/arm64
+        docker push lipoicdc/discord-bot:linux-arm64
