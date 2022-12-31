@@ -48,7 +48,7 @@ class MemberApplyCog(BaseCog):
     @discord.Cog.listener()
     async def on_new_apply(self, data: EventData):
         applyDB = self.db.MemberApply
-        jobs = data.jobs
+        job = data.job
 
         apply_channel: TextChannel = self.bot.get_channel(self.bot.apply_channel_id)
         embed = discord.Embed(
@@ -59,22 +59,13 @@ class MemberApplyCog(BaseCog):
         embed.add_field(name="簡歷:", value=data.CV, inline=False)
         embed.add_field(name="加入原因:", value=data.reason, inline=False)
         embed.add_field(name="想法或願景:", value=data.thoughts, inline=False)
-        embed.add_field(
-            name="欲申請的職位:",
-            value="\n".join(
-                [
-                    f"第{['一', '二', '三'][index]}順位: ```{job}```"
-                    for index, job in enumerate(jobs)
-                ]
-            ),
-            inline=False,
-        )
+        embed.add_field(name="欲申請的職位:", value=job, inline=False)
 
         if data.remark:
             embed.add_field(name="備註:", value=data.remark, inline=False)
 
         apply_thread = await apply_channel.create_thread(
-            name=f"編號 {data.ID} | 申請 {jobs[0]}",
+            name=f"編號 {data.ID} | 申請 {job}",
             type=ChannelType.public_thread,
             reason=f"編號#{data.ID}應徵申請",
         )
@@ -83,21 +74,34 @@ class MemberApplyCog(BaseCog):
         )
 
         applyDB.insert(
-            thread_id=apply_thread.id, state=f"{message.id}-0-", data=data._asdict()
+            thread_id=apply_thread.id, message_id=message.id, data=data._asdict()
         ).execute()
 
-    @discord.slash_command(description="apply", guild_only=True)
-    async def apply(self, ctx: ApplicationContext, code: Option(str, "申請驗證碼")):
+    @discord.slash_command(description="開啟面試頻道，並等待組長開始面試", guild_only=True)
+    async def meeting(self, ctx: ApplicationContext, code: Option(str, "申請驗證碼")):
         applyDB = self.db.MemberApply
         apply: MemberApply = applyDB.get_or_none(applyDB.code == code)
         if apply:
-            member_role = ctx.guild.get_role(self.bot.member_role_id)
-            if apply_role := self.bot.job_role.get(apply.pass_job[0:2], None):
-                job_role = ctx.guild.get_role(apply_role)
-                await ctx.author.add_roles(member_role, job_role)
-            else:
-                await ctx.author.add_roles(member_role)
-            embed = Embed(title="驗證成功!", description=f"您通過的身分為:```{apply.pass_job}```")
+            meeting_member = ctx.author
+            meeting_category: discord.CategoryChannel = (
+                await self.bot.get_or_fetch_channel(
+                    self.bot.meeting_category_id
+                )
+            )
+            meeting_channel = await meeting_category.create_text_channel(
+                name=f"{meeting_member.name}的面試頻道",
+                overwrites={
+                    ctx.guild.default_role: discord.PermissionOverwrite(view_channel=False),  # noqa: E501
+                    meeting_member: discord.PermissionOverwrite(
+                        view_channel=True,
+                        send_messages=True
+                    )
+                }
+            )
+            embed = Embed(
+                title="創建成功!",
+                description=f"已成功創建在{meeting_channel.mention}，請等候相關人員審核。"
+            )
             applyDB.update(code=None).where(
                 applyDB.thread_id == apply.thread_id
             ).execute()
@@ -147,88 +151,64 @@ class ApplyView(View):
 
         dbData: MemberApply = applyDB.get_or_none(thread_id=channel_id)
         data = EventData(**dbData.data)
-        jobs = data.jobs
-        message_id, rank, allow_users = str(dbData.state).split("-")
-        rank = int(rank)
-        allow_users = [
-            str(_.id if (_ := self.bot.get_user(id)) else id)
-            for id in allow_users.split(",")
-            if id
-        ]
-        message = self.bot.get_message(int(message_id))
+        job = data.job
+        message_id = dbData.message_id
+        message = self.bot.get_message(message_id)
         if not message:
-            message = await channel.fetch_message(int(message_id))
-        if (user_id := str(interaction.user.id)) not in allow_users:
-            allow_users.append(user_id)
+            message = await channel.fetch_message(message_id)
 
-        if (
-            (rank == 0 and _type == "FAIL")
-            or (rank != 0 and _type == "PASS")
-            or (rank == len(jobs) and _type == "FAIL")
-        ):
-            await message.edit(
-                view=View(Button(style=ButtonStyle.gray, label="面試已結束", disabled=True))
-            )
-            email_data = MemberApplyEmailData(
-                email=data.email,
-                date=data.time,
-                allow=False,
-                jobs=jobs,
-            )
-            if state := rank != 0 and _type == "PASS":
-                select_job = jobs[rank - 1]
-                applyDB.update(pass_job=select_job).where(
-                    applyDB.thread_id == channel_id
-                ).execute()
-                embed = discord.Embed(
-                    title=f"第 {data.ID} 號應徵者", description=f"申請時間:\n`{data.time}`"
-                )
-                code = self.bot.db.create_apply_member_check_code(channel_id)
-                embed.add_field(
-                    name="審核人員",
-                    value=", ".join([f"<@{user}>" for user in allow_users]),
-                    inline=False,
-                )
-                embed.add_field(name="Email", value=f"```{data.email}```", inline=False)
-                embed.add_field(name="通過職位", value=f"```{select_job}```", inline=False)
-                embed.add_field(name="驗證碼", value=f"`{code}`", inline=False)
-                await channel.send(embed=embed)
-                user = await self.bot.get_or_fetch_user(allow_users[0])
-                email_data.allow = True
-                email_data.team = select_job[:2]
-                email_data.position = select_job
-                email_data.HR_DC_Id = user.name
-                email_data.HR_DC_Name = f"{user.name}#{user.discriminator}"
-                email_data.check_code = code
+        # if (  # 偵測面試是否結束
+        #     _type == "FAIL"  # 人事或組長按"駁回"
 
-            msg = await channel.send("發送 email 中...")
-
-            try:
-                code = (
-                    await MemberApplyCog(self.bot).send_apply_member_email(email_data)
-                )["code"]
-                if str(code) != "200":
-                    raise Exception()
-            except:
-                await msg.edit(f"email 發送失敗，<@&{self.bot.hr_role_id}>")
-            else:
-                await msg.edit("email 發送完成", delete_after=60)
-
-            return await channel.edit(
-                name=f"{'✅' if state else '❌'} {channel.name}",
-                archived=True,
-                locked=True,
-            )
-
-        applyDB.update(state=f'{message_id}-{rank + 1}-{",".join(allow_users)}').where(
-            applyDB.thread_id == channel_id
-        ).execute()
-
-        (stage_button := self.stage_button).label = f"組長二審: {jobs[rank]}"
-        await interaction.channel.edit(name=f"編號 {data.ID} | 申請 {jobs[rank]}")
-        await interaction.response.edit_message(
-            view=View(stage_button, self.stage_success, self.stage_fail, timeout=None)
+        # ):
+        await message.edit(
+            view=View(Button(style=ButtonStyle.gray, label="面試已結束", disabled=True))
         )
+        email_data = MemberApplyEmailData(
+            email=data.email,
+            date=data.time,
+            allow=False,
+            job=job,
+        )
+        if _type == "PASS":  # 初審通過
+            applyDB.update(pass_job=job).where(
+                applyDB.thread_id == channel_id
+            ).execute()
+            embed = discord.Embed(
+                title=f"第 {data.ID} 號應徵者", description=f"申請時間:\n`{data.time}`"
+            )
+            code = self.bot.db.create_apply_member_check_code(channel_id)
+            embed.add_field(name="Email", value=f"```{data.email}```", inline=False)
+            embed.add_field(name="通過職位", value=f"```{job}```", inline=False)
+            embed.add_field(name="驗證碼", value=f"||`{code}`||", inline=False)
+            await channel.send(embed=embed)
+            email_data.allow = True
+            email_data.team = job.split(" - ")[0]
+            email_data.position = job
+            email_data.check_code = code
+
+        msg = await channel.send("發送📧email 中...")
+        try:
+            code = (
+                await MemberApplyCog(self.bot).send_apply_member_email(email_data)
+            )["code"]
+            if str(code) != "200":
+                raise Exception()
+        except:
+            await msg.edit(f"📧email 發送失敗，<@&{self.bot.hr_role_id}>")
+        else:
+            await msg.edit("📧email 發送完成", delete_after=60)
+        return await channel.edit(
+            name=f"{'✅' if _type == 'PASS' else '❌'} {channel.name}",
+            archived=True,
+            locked=True,
+        )
+
+        # (stage_button := self.stage_button).label = f"組長二審: {job}"
+        # # await interaction.channel.edit(name=f"編號 {data.ID} | 申請 {job[rank]}")
+        # await interaction.response.edit_message(
+        #     view=View(stage_button, self.stage_success, self.stage_fail, timeout=None)
+        # )
 
     async def stage_success_callback(self, interaction: ApplicationContext):
         await self.button_callback(interaction, "PASS")

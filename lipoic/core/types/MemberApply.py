@@ -1,23 +1,18 @@
-from typing import List, Text, Literal, Optional, NamedTuple
+from typing import Text, Literal, Optional, NamedTuple
 
-jobsType = Literal[
-    "美術 - 網站界面設計",
-    "美術 - 海報、文宣設計",
-    "美術 - 影音",
-    "資訊 - 前端 (Vue.js)",
-    "資訊 - 後端 (Rust)",
-    "資訊 - 應用程式 (Flutter)",
-    "資訊 - Discord 機器人開發 (Python)",
-    "資訊 - 資訊安全",
-    "資訊 - DevOps",
-    "行政 - 社群管理",
-    "行政 - 宣傳",
-    "行政 - 企劃",
-    "行政 - 文書",
-    "財務 - 財務管理",
-    "其他 - 顧問",
+jobType = Literal[
+    "平台開發部 - UI/UX組 - 使用者介面設計",
+    "平台開發部 - UI/UX組 - 使用者體驗",
+    "平台開發部 - 前端組 - 開發工程師 (Vue.js/TS)",
+    "平台開發部 - 後端組 - 開發工程師 (Express.js/TS)",
+    "平台開發部 - 應用程式組 - 開發工程師 (Flutter)",
+    "Discord Bot 開發部 - 開發工程師 (Python)",
+    "行政部 - 企劃組 - 企劃人員",
+    "行政部 - 人事組 - 人事人員",
+    "行政部 - 宣傳組 - 海報與文宣設計",
+    "行政部 - 宣傳組 - 影音",
+    "行政部 - 宣傳組 - 社群管理",
 ]
-identityType = Literal["學生", "教育工作者", "就職者"]
 
 
 class EventData(NamedTuple):
@@ -27,18 +22,18 @@ class EventData(NamedTuple):
 
     # email | 電子郵件
     email: Text
-    # self introduction | 自介
+    # self introduction | 自我介紹
     selfIntro: Text
-    # identity | 身分
-    identity: identityType | Text
-    # CV | 簡歷
+    # identity | 您目前的身份?
+    identity: Text
+    # CV | 您的簡歷 (經歷、作品連結等)
     CV: Text
-    # reason | 原因
+    # reason | 您為什麼會想要加入 Lipoic ?
     reason: Text
-    # thoughts | 想法
+    # thoughts | 您對於 Lipoic 的想法或願景？
     thoughts: Text
-    # jobs | 想參予的職位
-    jobs: List[jobsType]
+    # job | 您想參與的職務
+    job: jobType
     # remark | 備註
     remark: Optional[Text]
     # time | 時間
