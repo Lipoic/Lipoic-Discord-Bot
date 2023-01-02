@@ -82,6 +82,7 @@ class MemberApplyCog(BaseCog):
         applyDB = self.db.MemberApply
         apply: MemberApply = applyDB.get_or_none(applyDB.code == code)
         if apply:
+            data = apply.data
             meeting_member = ctx.author
             meeting_category: discord.CategoryChannel = (
                 await self.bot.get_or_fetch_channel(
@@ -89,15 +90,22 @@ class MemberApplyCog(BaseCog):
                 )
             )
             meeting_channel = await meeting_category.create_text_channel(
-                name=f"{meeting_member.name}的面試頻道",
+                name=f"編號{data['ID']}-面試頻道",
                 overwrites={
                     ctx.guild.default_role: discord.PermissionOverwrite(view_channel=False),  # noqa: E501
                     meeting_member: discord.PermissionOverwrite(
                         view_channel=True,
                         send_messages=True
                     )
-                }
+                },
+                topic=f"被審核人員: {meeting_member.mention}\n申請職位: {data['job']}"
             )
+            meeting_embed = discord.Embed(
+                title=f"第{data['ID']}號應徵者", description=f"申請時間:\n`{data['time']}`"
+            )
+            meeting_embed.add_field(name="欲申請的職位:", value=data['job'], inline=False)
+            await meeting_channel.send(meeting_member.mention, embed=meeting_embed)
+
             embed = Embed(
                 title="創建成功!",
                 description=f"已成功創建在{meeting_channel.mention}，請等候相關人員審核。"
@@ -157,10 +165,6 @@ class ApplyView(View):
         if not message:
             message = await channel.fetch_message(message_id)
 
-        # if (  # 偵測面試是否結束
-        #     _type == "FAIL"  # 人事或組長按"駁回"
-
-        # ):
         await message.edit(
             view=View(Button(style=ButtonStyle.gray, label="面試已結束", disabled=True))
         )
@@ -204,12 +208,6 @@ class ApplyView(View):
             locked=True,
         )
 
-        # (stage_button := self.stage_button).label = f"組長二審: {job}"
-        # # await interaction.channel.edit(name=f"編號 {data.ID} | 申請 {job[rank]}")
-        # await interaction.response.edit_message(
-        #     view=View(stage_button, self.stage_success, self.stage_fail, timeout=None)
-        # )
-
     async def stage_success_callback(self, interaction: ApplicationContext):
         await self.button_callback(interaction, "PASS")
 
@@ -220,7 +218,7 @@ class ApplyView(View):
     def stage_button(self):
         return Button(
             style=ButtonStyle.gray,
-            label="人事一審",
+            label="人事初審",
             disabled=True,
             custom_id="apply_stage_button",
             row=0,
