@@ -208,11 +208,52 @@ class ApplyView(View):
             locked=True,
         )
 
-    async def stage_success_callback(self, interaction: ApplicationContext):
+    async def stage_success_check_callback(self, interaction: Interaction):
+        await self.button_check_callback(interaction, "PASS")
+
+    async def stage_fail_check_callback(self, interaction: Interaction):
+        await self.button_check_callback(interaction, "FAIL")
+
+    async def stage_success_callback(self, interaction: Interaction):
+        await interaction.response.edit_message(content="通過作業中...", delete_after=1)
         await self.button_callback(interaction, "PASS")
 
-    async def stage_fail_callback(self, interaction: ApplicationContext):
+    async def stage_fail_callback(self, interaction: Interaction):
+        await interaction.response.edit_message(content="駁回作業中...", delete_after=1)
         await self.button_callback(interaction, "FAIL")
+
+    async def stage_cancel_callback(self, interaction: Interaction):
+        await interaction.response.edit_message(content="已取消", delete_after=2)
+
+    async def button_check_callback(
+        self, interaction: Interaction, _type: Literal["PASS", "FAIL"]
+    ):
+        stage = "通過" if _type == "PASS" else "駁回"
+        (
+            stage_success := Button(
+                custom_id="apply_stage_success",
+                style=ButtonStyle.green,
+                label=f"確定{stage}",
+            )
+        ).callback = (
+            self.stage_success_callback if _type == "PASS"
+            else self.stage_fail_callback
+        )
+
+        (
+            stage_cancel := Button(
+                custom_id="apply_stage_cancel",
+                style=ButtonStyle.red,
+                label="取消"
+            )
+        ).callback = self.stage_cancel_callback
+
+        await interaction.response.send_message(
+            f"你確定要**{stage}**這次申請嗎?\n> **此動作無法復原**",
+            view=View(
+                stage_success, stage_cancel
+            )
+        )
 
     @property
     def stage_button(self):
@@ -228,12 +269,12 @@ class ApplyView(View):
     def stage_success(self):
         (
             stage_success := Button(
-                custom_id="apply_stage_success",
+                custom_id="apply_stage_success_check",
                 style=ButtonStyle.green,
                 label="通過",
                 row=1,
             )
-        ).callback = self.stage_success_callback
+        ).callback = self.stage_success_check_callback
 
         return stage_success
 
@@ -241,9 +282,12 @@ class ApplyView(View):
     def stage_fail(self):
         (
             stage_fail := Button(
-                custom_id="apply_stage_fail", style=ButtonStyle.red, label="駁回", row=1
+                custom_id="apply_stage_fail_check",
+                style=ButtonStyle.red,
+                label="駁回",
+                row=1
             )
-        ).callback = self.stage_fail_callback
+        ).callback = self.stage_fail_check_callback
 
         return stage_fail
 
