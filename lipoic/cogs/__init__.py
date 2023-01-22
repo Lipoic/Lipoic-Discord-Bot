@@ -28,18 +28,18 @@ class DevCog(BaseCog, dev=True):
             "new_apply",
             EventData(
                 email=test_email,
-                selfIntro="test",
+                selfIntro="test2",
                 identity="學生",
-                CV="test",
-                reason="test",
-                thoughts="test",
-                jobs=["資訊 - 前端 (Vue.js)"],
-                remark="test",
-                time="2022/7/1 下午 2:22:49",
-                ID=10,
+                CV="test2",
+                reason="test2",
+                thoughts="test2",
+                job="Discord Bot 開發部 - 開發工程師 (Python)",
+                remark="test2",
+                time="2022/12/31 下午 11:59:59",
+                ID=16,
             ),
         )
-        await ctx.respond("call apply")
+        await ctx.respond("call apply successfully")
 
 
 def setup(bot: "LIPOIC"):
