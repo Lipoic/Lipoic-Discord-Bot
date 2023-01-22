@@ -114,7 +114,11 @@ class MemberApplyCog(BaseCog):
             await ctx.respond(embed=embed, ephemeral=True)
 
             apply_thread = await self.bot.get_or_fetch_channel(apply.thread_id)
-            await apply_thread.edit(name=f"❓ {apply_thread.name[2:]}")
+            await apply_thread.edit(
+                name=f"❓ {apply_thread.name[2:]}",
+                archived=False,
+                locked=False,
+            )
             embed = discord.Embed(
                 title="面試頻道已被開啟",
                 description=f"頻道: {meeting_channel.mention}"
@@ -375,7 +379,7 @@ class MeetingView(View):
         if _type == "PASS":  # 面試通過
             embed = discord.Embed(
                 title=f"第 {data.ID} 號應徵者",
-                description=f"面試時間: <t:{apply.meeting_time}:F>`"
+                description=f"面試時間: <t:{apply.meeting_time}:F>"
             )
             embed.add_field(name="通過職位", value=f"```{job}```", inline=False)
         else:
