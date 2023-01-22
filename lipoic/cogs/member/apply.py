@@ -1,5 +1,6 @@
 import inspect
 import json
+import datetime
 from typing import TYPE_CHECKING, Any, Literal, Optional
 
 import aiohttp
@@ -149,6 +150,7 @@ class ApplyView(View):
         for _, func in reversed(inspect.getmembers(self)):
             if isinstance(func, Item):
                 self.add_item(func)
+        self.on_double_check: bool = False
 
     async def button_callback(
         self, interaction: Interaction, _type: Literal["PASS", "FAIL"]
@@ -215,19 +217,46 @@ class ApplyView(View):
         await self.button_check_callback(interaction, "FAIL")
 
     async def stage_success_callback(self, interaction: Interaction):
-        await interaction.response.edit_message(content="通過作業中...", delete_after=1)
+        embed = discord.Embed(title="通過作業中..")
+        await interaction.response.edit_message(
+            embed=embed,
+            view=View(),
+            delete_after=1.5,
+        )
         await self.button_callback(interaction, "PASS")
 
     async def stage_fail_callback(self, interaction: Interaction):
-        await interaction.response.edit_message(content="駁回作業中...", delete_after=1)
+        embed = discord.Embed(title="駁回作業中..")
+        await interaction.response.edit_message(
+            embed=embed,
+            view=View(),
+            delete_after=1.5,
+        )
         await self.button_callback(interaction, "FAIL")
 
     async def stage_cancel_callback(self, interaction: Interaction):
-        await interaction.response.edit_message(content="已取消", delete_after=2)
+        embed = discord.Embed(title="已取消!")
+        await interaction.response.edit_message(
+            embed=embed,
+            view=View(),
+            delete_after=4,
+        )
+        self.on_double_check = False
 
     async def button_check_callback(
         self, interaction: Interaction, _type: Literal["PASS", "FAIL"]
     ):
+        if self.on_double_check:
+            embed = discord.Embed(
+                title="已在確認中!",
+                description="請勿在雙重確認時點擊此按鈕!",
+            )
+            await interaction.response.send_message(
+                embed=embed,
+                ephemeral=True
+            )
+            return
+        self.on_double_check = True
         stage = "通過" if _type == "PASS" else "駁回"
         (
             stage_success := Button(
@@ -248,11 +277,19 @@ class ApplyView(View):
             )
         ).callback = self.stage_cancel_callback
 
+        embed = discord.Embed(
+            title=f"確認 {stage}",
+            description=f"""你確定要 __**{stage}**__ 這次申請嗎?
+            > **此動作無法復原**
+            操作將於<t:{int(datetime.datetime.now().timestamp()) + 60}:R>自動取消"""
+        )
+
         await interaction.response.send_message(
-            f"你確定要**{stage}**這次申請嗎?\n> **此動作無法復原**",
+            embed=embed,
             view=View(
                 stage_success, stage_cancel
-            )
+            ),
+            delete_after=60
         )
 
     @property
