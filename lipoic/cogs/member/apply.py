@@ -1,6 +1,7 @@
 import inspect
 import json
 import datetime
+import asyncio
 from typing import TYPE_CHECKING, Any, Literal, Optional
 
 import aiohttp
@@ -240,27 +241,24 @@ class ApplyView(View):
         await self.button_check_callback(interaction, "FAIL")
 
     async def stage_success_callback(self, interaction: Interaction):
-        embed = discord.Embed(title="通過作業中..")
         await interaction.response.edit_message(
-            embed=embed,
+            embed=discord.Embed(title="通過作業中.."),
             view=View(),
             delete_after=1,
         )
         await self.button_callback(interaction, "PASS")
 
     async def stage_fail_callback(self, interaction: Interaction):
-        embed = discord.Embed(title="駁回作業中..")
         await interaction.response.edit_message(
-            embed=embed,
+            embed=discord.Embed(title="駁回作業中.."),
             view=View(),
             delete_after=1,
         )
         await self.button_callback(interaction, "FAIL")
 
     async def stage_cancel_callback(self, interaction: Interaction):
-        embed = discord.Embed(title="已取消!")
         await interaction.response.edit_message(
-            embed=embed,
+            embed=discord.Embed(title="已取消!"),
             view=View(),
             delete_after=4,
         )
@@ -307,6 +305,7 @@ class ApplyView(View):
             操作將於<t:{int(datetime.datetime.now().timestamp()) + 60}:R>自動取消"""
         )
 
+        hint = await interaction.response.send_message(
             embed=embed,
             view=View(stage_success, stage_cancel),
         )
@@ -392,11 +391,7 @@ class MeetingView(View):
                 if pass_role := channel.guild.get_role(pass_role_id):
                     member_role = channel.guild.get_role(self.bot.member_role_id)
                     member.add_roles(member_role, pass_role)
-            else:
-                error_embed = discord.Embed(
-                    title="發生錯誤!",
-                    description=f"無法自動分配身份組給{member.mention}，請手動給予!"
-                )
+
             embed = discord.Embed(
                 title=f"第 {data.ID} 號應徵者",
                 description=f"面試時間: <t:{apply.meeting_time}:F>"
@@ -412,6 +407,10 @@ class MeetingView(View):
             view=View(Button(style=ButtonStyle.gray, label="面試已結束", disabled=True))
         )
         if not pass_role_id:
+            error_embed = discord.Embed(
+                title="發生錯誤!",
+                description=f"無法自動分配身份組給{member.mention}，請手動給予!"
+            )
             await channel.send(f"<@&{self.bot.hr_role_id}>", embed=error_embed)
         return await channel.edit(
             name=f"{'✅' if _type == 'PASS' else '❌'} {channel.name[2:]}",
@@ -426,27 +425,24 @@ class MeetingView(View):
         await self.button_check_callback(interaction, "FAIL")
 
     async def stage_success_callback(self, interaction: Interaction):
-        embed = discord.Embed(title="通過作業中..")
         await interaction.response.edit_message(
-            embed=embed,
+            embed=discord.Embed(title="通過作業中.."),
             view=View(),
             delete_after=1,
         )
         await self.button_callback(interaction, "PASS")
 
     async def stage_fail_callback(self, interaction: Interaction):
-        embed = discord.Embed(title="駁回作業中..")
         await interaction.response.edit_message(
-            embed=embed,
+            embed=discord.Embed(title="駁回作業中.."),
             view=View(),
             delete_after=1,
         )
         await self.button_callback(interaction, "FAIL")
 
     async def stage_cancel_callback(self, interaction: Interaction):
-        embed = discord.Embed(title="已取消!")
         await interaction.response.edit_message(
-            embed=embed,
+            embed=discord.Embed(title="已取消!"),
             view=View(),
             delete_after=4,
         )

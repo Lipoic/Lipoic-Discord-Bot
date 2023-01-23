@@ -22,7 +22,7 @@ class MemberApply(BaseModel):
     # meeting timestamp
     meeting_time = IntegerField(null=True)
     # meeting member ID
-    meeting_member = IntegerField(null=True, unique=True)
+    meeting_member = IntegerField(null=True)
     # job verify code
     code = TextField(null=True)
     # job that has been passed
