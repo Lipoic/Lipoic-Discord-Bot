@@ -310,7 +310,7 @@ class ApplyView(View):
             view=View(stage_success, stage_cancel),
         )
         await asyncio.sleep(60)
-        await hint.response.edit_message(
+        await hint.edit_original_message(
             embed=discord.Embed(title="已取消!"),
             view=View(),
             delete_after=4,
@@ -494,7 +494,7 @@ class MeetingView(View):
             view=View(stage_success, stage_cancel),
         )
         await asyncio.sleep(60)
-        await hint.response.edit_message(
+        await hint.edit_original_message(
             embed=discord.Embed(title="已取消!"),
             view=View(),
             delete_after=4,
