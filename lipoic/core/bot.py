@@ -61,6 +61,7 @@ class LIPOIC(discord.Bot):
             self.apply_channel_id: int = config["apply_channel_id"]
             self.meeting_category_id: int = config["meeting_category_id"]
             self.job_role: dict = config["job_role"]
+            self.team_role: dict = config["team_role"]
             self.hr_role_id: int = config["hr_role_id"]
 
         super().__init__(*args, **kwargs)

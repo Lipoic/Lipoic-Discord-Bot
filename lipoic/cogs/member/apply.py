@@ -390,8 +390,12 @@ class MeetingView(View):
             )
             if pass_role_id := self.bot.job_role.get(apply.pass_job):
                 if pass_role := channel.guild.get_role(pass_role_id):
-                    member_role = channel.guild.get_role(self.bot.member_role_id)
-                    member.add_roles(member_role, pass_role)
+                    if pass_team_id := self.bot.team_role.get((job.split(" - ")[0])):
+                        if pass_team := channel.guild.get_role(pass_team_id):
+                            member_role = channel.guild.get_role(
+                                self.bot.member_role_id
+                            )
+                            await member.add_roles(member_role, pass_team, pass_role)
 
             embed = discord.Embed(
                 title=f"第 {data.ID} 號應徵者",
