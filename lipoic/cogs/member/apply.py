@@ -380,7 +380,10 @@ class MeetingView(View):
         if _type == "PASS":  # 面試通過
             pass_role_id = self.bot.job_role.get(apply.pass_job)
             member: discord.Member = (
-                await self.bot.get_or_fetch_member(apply.meeting_member)
+                await self.bot.get_or_fetch_member(
+                    channel.guild,
+                    apply.meeting_member
+                )
             )
             if pass_role_id := self.bot.job_role.get(apply.pass_job):
                 if pass_role := channel.guild.get_role(pass_role_id):

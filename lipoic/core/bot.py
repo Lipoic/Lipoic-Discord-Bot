@@ -166,7 +166,7 @@ class LIPOIC(discord.Bot):
         """
         if (member := guild.get_member(member_id := int(member_id))) is not None:
             return member
-        return await guild.fetch_member(guild, member_id)
+        return await guild.fetch_member(member_id)
 
     async def get_or_fetch_channel(self, channel_id: Union[int, str]):
         if (channel := self.get_channel(channel_id := int(channel_id))) is not None:
