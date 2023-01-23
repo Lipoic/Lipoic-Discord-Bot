@@ -307,13 +307,16 @@ class ApplyView(View):
             操作將於<t:{int(datetime.datetime.now().timestamp()) + 60}:R>自動取消"""
         )
 
-        await interaction.response.send_message(
             embed=embed,
-            view=View(
-                stage_success, stage_cancel
-            ),
-            delete_after=60
+            view=View(stage_success, stage_cancel),
         )
+        await asyncio.sleep(60)
+        await hint.response.edit_message(
+            embed=discord.Embed(title="已取消!"),
+            view=View(),
+            delete_after=4,
+        )
+        self.on_double_check = False
 
     @property
     def stage_button(self):
@@ -490,13 +493,17 @@ class MeetingView(View):
             操作將於<t:{int(datetime.datetime.now().timestamp()) + 60}:R>自動取消"""
         )
 
-        await interaction.response.send_message(
+        hint = await interaction.response.send_message(
             embed=embed,
-            view=View(
-                stage_success, stage_cancel
-            ),
-            delete_after=60
+            view=View(stage_success, stage_cancel),
         )
+        await asyncio.sleep(60)
+        await hint.response.edit_message(
+            embed=discord.Embed(title="已取消!"),
+            view=View(),
+            delete_after=4,
+        )
+        self.on_double_check = False
 
     @property
     def stage_button(self):
