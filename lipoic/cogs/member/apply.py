@@ -132,6 +132,7 @@ class MemberApplyCog(BaseCog):
                 meeting_channel_id=meeting_channel.id,
                 meeting_message_id=meeting_message.id,
                 meeting_time=int(datetime.datetime.now().timestamp()),
+                meeting_member=meeting_member.id,
                 code=None,
             ).where(
                 applyDB.thread_id == apply.thread_id
@@ -377,6 +378,19 @@ class MeetingView(View):
             message = await channel.fetch_message(message_id)
 
         if _type == "PASS":  # 面試通過
+            pass_role_id = self.bot.job_role.get(apply.pass_job)
+            member: discord.Member = (
+                await self.bot.get_or_fetch_member(apply.meeting_member)
+            )
+            if pass_role_id := self.bot.job_role.get(apply.pass_job):
+                if pass_role := channel.guild.get_role(pass_role_id):
+                    member_role = channel.guild.get_role(self.bot.member_role_id)
+                    member.add_roles(member_role, pass_role)
+            else:
+                error_embed = discord.Embed(
+                    title="發生錯誤!",
+                    description=f"無法自動分配身份組給{member.mention}，請手動給予!"
+                )
             embed = discord.Embed(
                 title=f"第 {data.ID} 號應徵者",
                 description=f"面試時間: <t:{apply.meeting_time}:F>"
@@ -391,6 +405,8 @@ class MeetingView(View):
             embed=embed,
             view=View(Button(style=ButtonStyle.gray, label="面試已結束", disabled=True))
         )
+        if not pass_role_id:
+            await channel.send(f"<@&{self.bot.hr_role_id}>", embed=error_embed)
         return await channel.edit(
             name=f"{'✅' if _type == 'PASS' else '❌'} {channel.name[2:]}",
             archived=True,

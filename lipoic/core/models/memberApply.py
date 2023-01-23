@@ -5,7 +5,7 @@ from playhouse.sqlite_ext import IntegerField, TextField, JSONField
 from . import BaseModel
 
 if TYPE_CHECKING:
-    from core.types.MemberApply import jobsType, EventData
+    from core.types.MemberApply import jobType, EventData
 
 
 class MemberApply(BaseModel):
@@ -21,6 +21,8 @@ class MemberApply(BaseModel):
     meeting_message_id = IntegerField(null=True, unique=True)
     # meeting timestamp
     meeting_time = IntegerField(null=True)
+    # meeting member ID
+    meeting_member = IntegerField(null=True, unique=True)
     # job verify code
     code = TextField(null=True)
     # job that has been passed
@@ -42,11 +44,13 @@ class MemberApplyType(TypedDict):
     meeting_message_id: int
     # meeting timestamp
     meeting_time: int
+    # meeting member ID
+    meeting_member: int
     # email
     email: str
     # job verify code
     code: Optional[str]
     # job that has been passed
-    pass_job: Optional["jobsType"]
+    pass_job: Optional["jobType"]
     # data
     data: "EventData"
