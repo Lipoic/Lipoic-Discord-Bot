@@ -310,13 +310,15 @@ class ApplyView(View):
             view=View(stage_success, stage_cancel),
         )
         await asyncio.sleep(60)
-        if self.on_double_check:
+        try:
             await hint.edit_original_message(
                 embed=discord.Embed(title="已取消!"),
                 view=View(),
                 delete_after=4,
             )
             self.on_double_check = False
+        except:
+            pass
 
     @property
     def stage_button(self):
@@ -499,13 +501,15 @@ class MeetingView(View):
             view=View(stage_success, stage_cancel),
         )
         await asyncio.sleep(60)
-        if self.on_double_check:
+        try:
             await hint.edit_original_message(
                 embed=discord.Embed(title="已取消!"),
                 view=View(),
                 delete_after=4,
             )
             self.on_double_check = False
+        except:
+            pass
 
     @property
     def stage_button(self):
