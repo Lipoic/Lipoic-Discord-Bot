@@ -1,24 +1,57 @@
-name: Docker Image CI
+name: Docker
+
+# This workflow uses actions that are not certified by GitHub.
+# They are provided by a third-party and are governed by
+# separate terms of service, privacy policy, and support
+# documentation.
 
 on:
-  push:
-    branches: ["main"]
   workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - README.md
+      - .github/**
+  schedule:
+    - cron: 33 17 * * *
+  pull_request:
+    branches:
+      - main
+
+env:
+  # Use docker.io for Docker Hub if empty
+  REGISTRY: ghcr.io
+  # github.repository as <account>/<repo>
+  IMAGE_NAME: ${{ github.repository }}
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
-    - uses: actions/checkout@v3
-    - name: Build the Docker image
-      env:
-        DOCKER_PUSH_TOKEN: ${{ secrets.DOCKER_PUSH_TOKEN }}
-      run: |
-        docker login -u lipoicdc -p "$DOCKER_PUSH_TOKEN"
+      - name: Git checkout for Github repository workspace
+        uses: actions/checkout@v3
 
-        docker build . --file Dockerfile --tag lipoicdc/discord-bot
-        docker push lipoicdc/discord-bot
+      - name: Setup QEMU for multiarch builds
+        uses: docker/setup-qemu-action@v2
 
-        docker build . --file Dockerfile.arm64 --tag lipoicdc/discord-bot:linux-arm64 --platform linux/arm64
-        docker push lipoicdc/discord-bot:linux-arm64
+      - name: Setup Docker buildx
+        uses: docker/setup-buildx-action@v2
+        with:
+          version: 'v0.8.2'
+          buildkitd-flags: --debug
+
+      - name: Login to registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: docker/build-push-action@v3
+        with:
+          context: ./
+          file: ./Dockerfile.arm64
+          platforms: linux/arm64
+          push: true
+          tags: ghcr.io/lipoic/lipoic-discord-bot:latest
