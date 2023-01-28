@@ -1,10 +1,13 @@
 import inspect
-import json
 import datetime
 import asyncio
 from typing import TYPE_CHECKING, Any, Literal, Optional
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+import smtplib
+from string import Template
+import os
 
-import aiohttp
 import discord
 from discord import (
     ChannelType,
@@ -25,7 +28,7 @@ if TYPE_CHECKING:
     from lipoic.core.models import MemberApply
 
 
-class MemberApplyEmailData:
+class MemberApplyEmailData():
     def __init__(self, **kwargs: Any):
         for k, v in kwargs.items():
             setattr(self, k, v)
@@ -37,13 +40,57 @@ class MemberApplyEmailData:
             yield x, y
 
     email: str
-    date: str
+    time: str
     team: Optional[str]
-    position: Optional[str]
+    job: Optional[str]
+    reason: Optional[str]
     HR_DC_Id: Optional[str]
-    HR_DC_Name: Optional[str]
+    HR_DC_Name: Optional[str] = "tommy2131#3750"
     check_code: Optional[str]
     allow: bool
+
+    def send(self, _type: Literal["Application", "Interview"]) -> None:
+        """
+        Return:
+            None if send email success.
+        Return Type:
+            None
+        Raise:
+            Exception - send email fail.
+        """
+        content = MIMEMultipart()
+        content["subject"] = "Lipoic 重要通知"
+        content["from"] = os.getenv("HR_MAIL_ADDRESS")
+        content["to"] = self.email
+        with open(
+            f"{_type}_{'Pass' if self.allow else 'Reject'}ed_Response_Template.html",
+            "r",
+            encoding="UTF8",
+        ) as mail_temp_file:
+            mail_temp_data = mail_temp_file.read()
+        template = Template(mail_temp_data)
+        self.body = template.substitute(
+            {   # pass
+                "time": self.time,
+                "team": self.team,
+                "job": self.job,
+                "hr_member": self.HR_DC_Name,
+            } if self.allow else {
+                # reject
+                "time": self.time,
+                "reason": self.reason
+            }
+        )
+        content.attach(MIMEText(self.body, "html"))
+        with smtplib.SMTP(host="smtp.gmail.com", port="587") as smtp:
+            try:
+                smtp.ehlo()
+                smtp.starttls()
+                smtp.login(os.getenv("HR_MAIL_ADDRESS"), os.getenv("HR_MAIL_PASSWORD"))
+                smtp.send_message(content)
+                return None
+            except Exception as e:
+                raise Exception(e)
 
 
 class MemberApplyCog(BaseCog):
@@ -149,22 +196,6 @@ class MemberApplyCog(BaseCog):
         self.bot.add_view(ApplyView(self.bot))
         self.bot.add_view(MeetingView(self.bot))
 
-    async def send_apply_member_email(self, data: MemberApplyEmailData):
-        async with aiohttp.ClientSession(loop=self.bot.loop) as session:
-            async with session.post(
-                self.bot.configs["GOOGLE_SCRIPT_URL"],
-                json={
-                    "authorization": self.bot.configs["memberApplyServerToken"],
-                    **dict(data),
-                },
-            ) as resp:
-                data = await resp.text(encoding="utf8")
-                try:
-                    data = json.loads(data)
-                except KeyError:
-                    ...
-                return data
-
 
 class ApplyView(View):
     def __init__(self, bot: "LIPOIC"):
@@ -196,7 +227,7 @@ class ApplyView(View):
         )
         email_data = MemberApplyEmailData(
             email=data.email,
-            date=data.time,
+            time=data.time,
             allow=False,
             job=job,
         )
@@ -214,20 +245,28 @@ class ApplyView(View):
             await channel.send(embed=embed)
             email_data.allow = True
             email_data.team = job.split(" - ")[0]
-            email_data.position = job
+            email_data.job = job
             email_data.check_code = code
+        else:
+            email_data.reason = ""
 
         msg = await channel.send("發送📧email 中...")
         try:
-            code = (
-                await MemberApplyCog(self.bot).send_apply_member_email(email_data)
-            )["code"]
-            if str(code) != "200":
-                raise Exception()
-        except:
-            await msg.edit(f"📧email 發送失敗，<@&{self.bot.hr_role_id}>")
-        else:
+            email_data.send("Application")
             await msg.edit("📧email 發送完成", delete_after=60)
+        except Exception as error:
+            embed = discord.Embed(
+                title="發送📧email失敗!",
+                description=f"error:```{error}"
+            )
+            await msg.edit(
+                f"<@&{self.bot.hr_role_id}>",
+                embed=embed,
+                file=discord.File(
+                    email_data.body,
+                    filename="mail.html"
+                )
+            )
         return await channel.edit(
             name=f"{'✅' if _type == 'PASS' else '❌'} {channel.name}",
             archived=True,
@@ -381,7 +420,12 @@ class MeetingView(View):
         message = self.bot.get_message(message_id)
         if not message:
             message = await channel.fetch_message(message_id)
-
+        email_data = MemberApplyEmailData(
+            email=data.email,
+            time=data.time,
+            allow=False,
+            job=job,
+        )
         if _type == "PASS":  # 面試通過
             pass_role_id = self.bot.job_role.get(apply.pass_job)
             member: discord.Member = (
@@ -404,7 +448,12 @@ class MeetingView(View):
                 description=f"面試時間: <t:{apply.meeting_time}:F>"
             )
             embed.add_field(name="通過職位", value=f"```{job}```", inline=False)
+
+            email_data.allow = True
+            email_data.team = job.split(" - ")[0]
+            email_data.job = job
         else:
+            email_data.reason = ""
             embed = discord.Embed(
                 title=f"第 {data.ID} 號應徵者",
                 description="面試不通過"
@@ -419,6 +468,23 @@ class MeetingView(View):
                 description=f"無法自動分配身份組給{member.mention}，請手動給予!"
             )
             await channel.send(f"<@&{self.bot.hr_role_id}>", embed=error_embed)
+        msg = await channel.send("發送📧email 中...")
+        try:
+            email_data.send("Application")
+            await msg.edit("📧email 發送完成", delete_after=60)
+        except Exception as error:
+            embed = discord.Embed(
+                title="發送📧email失敗!",
+                description=f"error:```{error}"
+            )
+            await msg.edit(
+                f"<@&{self.bot.hr_role_id}>",
+                embed=embed,
+                file=discord.File(
+                    email_data.body,
+                    filename="mail.html"
+                )
+            )
         return await channel.edit(
             name=f"{'✅' if _type == 'PASS' else '❌'} {channel.name[2:]}",
             archived=True,
