@@ -80,7 +80,7 @@ class MemberApplyCog(BaseCog):
         ).execute()
 
     @discord.slash_command(description="開啟面試頻道，並等待組長開始面試", guild_only=True)
-    async def meeting(self, ctx: ApplicationContext, code: Option(str, "申請驗證碼")):
+    async def apply(self, ctx: ApplicationContext, code: Option(str, "申請驗證碼")):
         applyDB = self.db.MemberApply
         apply: MemberApply = applyDB.get_or_none(applyDB.code == code)
         if apply:
