@@ -27,6 +27,8 @@ class MemberApply(BaseModel):
     code = TextField(null=True)
     # job that has been passed
     pass_job = TextField(null=True)
+    # reject reason
+    reason = TextField(null=True)
     # data
     data = JSONField(default=lambda: {})
 
@@ -52,5 +54,7 @@ class MemberApplyType(TypedDict):
     code: Optional[str]
     # job that has been passed
     pass_job: Optional["jobType"]
+    # reject reason
+    reason: str
     # data
     data: "EventData"
