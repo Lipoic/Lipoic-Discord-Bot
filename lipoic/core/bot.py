@@ -59,7 +59,9 @@ class LIPOIC(discord.Bot):
             self.dvc_ids: List[int] = config["dvc_ids"]
             self.member_role_id: int = config["member_role_id"]
             self.apply_channel_id: int = config["apply_channel_id"]
+            self.meeting_category_id: int = config["meeting_category_id"]
             self.job_role: dict = config["job_role"]
+            self.team_role: dict = config["team_role"]
             self.hr_role_id: int = config["hr_role_id"]
 
         super().__init__(*args, **kwargs)
@@ -165,7 +167,7 @@ class LIPOIC(discord.Bot):
         """
         if (member := guild.get_member(member_id := int(member_id))) is not None:
             return member
-        return await guild.fetch_member(guild, member_id)
+        return await guild.fetch_member(member_id)
 
     async def get_or_fetch_channel(self, channel_id: Union[int, str]):
         if (channel := self.get_channel(channel_id := int(channel_id))) is not None:
