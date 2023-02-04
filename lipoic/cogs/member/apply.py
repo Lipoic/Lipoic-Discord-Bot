@@ -206,19 +206,22 @@ class AddReasonView(View):
         super().__init__(timeout=None)
 
         self.bot = bot
-        for _, func in reversed(inspect.getmembers(self)):
+        for _, func in inspect.getmembers(self):
             if isinstance(func, Item):
                 self.add_item(func)
         self.on_double_check = False
 
     async def send_mail(self, interaction: Interaction):
-        await interaction.message.delete()
+        await interaction.response.edit_message(
+            embed=Embed(
+                title="作業中..."
+            )
+        )
         applyDB = self.bot.db.MemberApply
         channel_id = interaction.channel_id
         # channel = await self.bot.get_or_fetch_channel(channel_id)
 
         apply: MemberApply = applyDB.get_or_none(thread_id=channel_id)
-        print(apply.meeting_channel_id)
         data = EventData(**apply.data)
         email_data = MemberApplyEmailData(
             email=data.email,
@@ -240,6 +243,7 @@ class AddReasonView(View):
                 embed=embed,
                 file=discord.File(email_data.html_file, filename="mail.html"),
             )
+        await interaction.message.delete()
         return await channel.edit(
             name=f"""❌ {channel.name if apply_state == 'Application'
                 else channel.name[2:]}""",
@@ -298,7 +302,7 @@ class AddReasonView(View):
         )
         embed.add_field(name="原因", value=f"```{self.modal.children[0].value}```")
         await interaction.message.edit(embed=embed)
-        await interaction.response.send_message("變更成功!", ephemeral=True, delete_after=8)
+        await interaction.response.send_message("變更成功!", ephemeral=True, delete_after=3)
         self.modal.stop()
 
     async def button_callback(self, interaction: Interaction):
@@ -329,30 +333,28 @@ class AddReasonView(View):
             await self.double_check(interaction)
 
     @property
+    def add_reason_button(self):
+        (
+            add_reason := Button(
+                custom_id="add_reason",
+                style=ButtonStyle.primary,
+                label="變更原因",
+            )
+        ).callback = self.button_callback
+
+        return add_reason
+
+    @property
     def send_email_button(self):
         (
             send_email := Button(
                 custom_id="send_email",
                 style=ButtonStyle.green,
                 label="發送email",
-                row=0,
             )
         ).callback = self.button_callback
 
         return send_email
-
-    @property
-    def add_reason_button(self):
-        (
-            add_reason := Button(
-                custom_id="add_reason",
-                style=ButtonStyle.green,
-                label="變更原因",
-                row=0,
-            )
-        ).callback = self.button_callback
-
-        return add_reason
 
 
 class ApplyView(View):
