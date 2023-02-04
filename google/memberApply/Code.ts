@@ -11,20 +11,15 @@ export const onFormSubmit = (
   const data = {
     email: namedValues['電子郵件地址']?.shift(),
     selfIntro: namedValues['自我介紹']?.shift(),
-    identity: namedValues['我目前的身份']?.shift(),
-    CV: namedValues['我的簡歷 (經歷、作品等)']?.shift(),
-    reason: namedValues['我為什麼會想要加入 Lipoic']?.shift(),
-    thoughts: namedValues['我對於 Lipoic 的想法或願景？']?.shift(),
-    jobs: [namedValues['我想參與的職務 (第一順位)']?.shift()],
+    identity: namedValues['您目前的身份?']?.shift(),
+    CV: namedValues['您的簡歷 (經歷、作品連結等)']?.shift(),
+    reason: namedValues['您為什麼會想要加入 Lipoic ?']?.shift(),
+    thoughts: namedValues['您對於 Lipoic 的想法或願景？']?.shift(),
+    job: [namedValues['您想參與的職務']?.shift()],
     remark: namedValues['備註']?.shift(),
     time: namedValues['時間戳記']?.shift(),
     ID: range.getRowIndex() - 1,
   };
-  const job2 = namedValues['我想參與的職務 (第二順位，選填)']?.shift();
-  const job3 = namedValues['我想參與的職務 (第三順位，選填)']?.shift();
-
-  job2 && data.jobs.push(job2);
-  job3 && data.jobs.push(job3);
 
   UrlFetchApp.fetch(`${ServerUrl}/dc-bot/new-apply`, {
     method: 'post',
@@ -33,103 +28,35 @@ export const onFormSubmit = (
     headers: { Authorization: TOKEN },
   });
 };
+
 export const doGet = (_event: GoogleAppsScript.Events.DoGet) => {
   return ContentService.createTextOutput(JSON.stringify({ code: 405 }));
 };
-export const doPost = (event: GoogleAppsScript.Events.DoPost) => {
-  try {
-    const _data: postData<boolean> = JSON.parse(event.postData.contents);
-    if (_data.authorization !== TOKEN)
-      return ContentService.createTextOutput(JSON.stringify({ code: 403 }));
-    delete _data.authorization;
 
-    if (_data.allow) {
-      const data = <postData<true>>_data;
-      const template = HtmlService.createTemplateFromFile('mail.html');
-
-      template.data = data;
-
-      MailApp.sendEmail({
-        bcc: data.email,
-        subject: 'Lipoic 組織成員申請通知',
-        htmlBody: template.evaluate().getContent(),
-      });
-    } else {
-      let data = <postData<false>>_data;
-      const template = HtmlService.createTemplateFromFile('failMail.html');
-
-      const formats = ['{0}', '{0} 和 {1}', '{0}、 {1} 和 {2}'];
-
-      template.data = {
-        ...data,
-        jobsStr: formats[data.jobs.length - 1].replace(
-          /\{[0-9]+\}/g,
-          (str, id) => data.jobs?.[+id] || str
-        ),
-      };
-
-      MailApp.sendEmail({
-        bcc: _data.email,
-        subject: 'Lipoic 組織成員申請通知',
-        htmlBody: template.evaluate().getContent(),
-      });
-    }
-    return ContentService.createTextOutput(
-      JSON.stringify({
-        code: 200,
-        remaining: MailApp.getRemainingDailyQuota(),
-      })
-    );
-  } catch {
-    return ContentService.createTextOutput(JSON.stringify({ code: 400 }));
-  }
-};
 export enum jobEnum {
-  '美術 - 網站界面設計',
-  '美術 - 海報、文宣設計',
-  '美術 - 影音',
-  '資訊 - 前端 (Vue.js)',
-  '資訊 - 後端 (Rust)',
-  '資訊 - 應用程式 (Flutter)',
-  '資訊 - Discord 機器人開發 (Python)',
-  '資訊 - 資訊安全',
-  '資訊 - DevOps',
-  '行政 - 社群管理',
-  '行政 - 宣傳',
-  '行政 - 企劃',
-  '行政 - 文書',
-  '財務 - 財務管理',
-  '其他 - 顧問',
+  '平台開發部 - UI/UX組 - 使用者介面設計',
+  '平台開發部 - UI/UX組 - 使用者體驗',
+  '平台開發部 - 前端組 - 開發工程師 (Vue.js/TS)',
+  '平台開發部 - 後端組 - 開發工程師 (Express.js/TS)',
+  '平台開發部 - 應用程式組 - 開發工程師 (Flutter)',
+  'Discord Bot 開發部 - 開發工程師 (Python)',
+  '行政部 - 企劃組 - 企劃人員',
+  '行政部 - 人事組 - 人事人員',
+  '行政部 - 宣傳組 - 海報與文宣設計',
+  '行政部 - 宣傳組 - 影音',
+  '行政部 - 宣傳組 - 社群管理',
 }
 
 export type jobsType = keyof typeof jobEnum;
 
 export interface formData {
   電子郵件: [string];
-  組織章程: [string];
   自我介紹: [string];
-  我目前的身份: ['學生' | '教育工作者' | '就職者' | string];
-  '我的簡歷 (經歷、作品等)': [string];
-  '我為什麼會想要加入 Lipoic': [string];
-  '我對於 Lipoic 的想法或願景？': [string];
-  '我想參與的職務 (第一順位)': [jobsType];
-  '我想參與的職務 (第二順位，選填)'?: [jobsType];
-  '我想參與的職務 (第三順位，選填)'?: [jobsType];
+  '您目前的身份?': ['學生' | '教育工作者' | '就職者' | string];
+  '您的簡歷 (經歷、作品連結等)': [string];
+  '您為什麼會想要加入 Lipoic ?': [string];
+  '您對於 Lipoic 的想法或願景？': [string];
+  您想參與的職務: [jobsType];
   備註?: [string];
   時間戳記: [string];
-}
-
-export interface postData<A extends boolean = false> {
-  /** send to {email} */
-  email: string;
-  date: string;
-  jobs: A extends false ? jobsType[] : undefined;
-  team: A extends true ? string : undefined;
-  position: A extends true ? string : undefined;
-  HR_DC_Id: A extends true ? string : undefined;
-  HR_DC_Name: A extends true ? string : undefined;
-  check_code: A extends true ? string : undefined;
-  allow: A;
-  /** token */
-  authorization: string;
 }
