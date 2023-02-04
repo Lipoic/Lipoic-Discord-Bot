@@ -2,9 +2,11 @@ import datetime
 import inspect
 import asyncio
 from typing import TYPE_CHECKING, Any, Literal, Optional
-from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+from email.utils import formataddr
+from email.message import EmailMessage
 import smtplib
+import ssl
 from string import Template
 from pathlib import Path
 import os
@@ -61,9 +63,9 @@ class MemberApplyEmailData:
         Raise:
             Exception - send email fail.
         """
-        content = MIMEMultipart()
+        content = EmailMessage()
         content["subject"] = "Lipoic 重要通知"
-        content["from"] = os.getenv("HR_MAIL_ADDRESS")
+        content["from"] = formataddr(("Lipoic HR Team", os.getenv("HR_MAIL_ADDRESS")))
         content["to"] = self.email
 
         mail_temp_data = (
@@ -72,7 +74,7 @@ class MemberApplyEmailData:
         ).read_text(encoding="utf-8")
         template = Template(mail_temp_data)
         body = template.substitute(
-            {  # pass
+            {   # pass
                 "time": self.time,
                 "team": self.team,
                 "job": self.job,
@@ -87,13 +89,19 @@ class MemberApplyEmailData:
             }
         )
         self.html_file = io.StringIO(body)
-        content.attach(MIMEText(body, "html"))
-        with smtplib.SMTP(host="smtp.gmail.com", port="587") as smtp:
+        content.set_content(MIMEText(body, "html"))
+        with smtplib.SMTP_SSL(
+            host="smtp.gmail.com",
+            port=465,
+            context=ssl.create_default_context()
+        ) as smtp:
             try:
-                smtp.ehlo()
-                smtp.starttls()
                 smtp.login(os.getenv("HR_MAIL_ADDRESS"), os.getenv("HR_MAIL_PASSWORD"))
-                smtp.send_message(content)
+                smtp.sendmail(
+                    os.getenv("HR_MAIL_ADDRESS"),
+                    self.email,
+                    content.as_string()
+                )
                 return None
             except Exception as e:
                 raise Exception(e)
@@ -236,7 +244,8 @@ class AddReasonView(View):
             await channel.send("📧email 發送完成", delete_after=60)
         except Exception as error:
             embed = discord.Embed(
-                title="發送📧email失敗，請手動發送!", description=f"Error:```{error}```"
+                title="發送📧email失敗，請手動發送!",
+                description=f"Email: `{data.email}`\nError:```{error}```"
             )
             await channel.send(
                 f"<@&{self.bot.hr_role_id}>",
@@ -480,7 +489,7 @@ class ApplyView(View):
             return
 
         # 初審/面試 通過
-        await interaction.message.edit(
+        await interaction.response.edit_message(
             embed=discord.Embed(title="處理中...", color=0x2ECC71),
         )
 
@@ -539,13 +548,15 @@ class ApplyView(View):
             await msg.edit("📧email 發送完成", delete_after=60)
         except Exception as error:
             embed = discord.Embed(
-                title="發送📧email失敗，請手動發送!", description=f"Error:```{error}```"
+                title="發送📧email失敗，請手動發送!",
+                description=f"Email: `{data.email}`\nError:```{error}```"
             )
             await msg.edit(
                 f"<@&{self.bot.hr_role_id}>",
                 embed=embed,
                 file=discord.File(email_data.html_file, filename="mail.html"),
             )
+        await interaction.message.delete()
         return await channel.edit(
             name=f"""✅ {channel.name if apply_state == 'Application'
                 else channel.name[2:]}""",
