@@ -40,7 +40,7 @@ python -m lipoic
 
 ```sh
 # build
-pipenv lock -r > requirements.txt
+pipenv requirements > requirements.txt
 docker build -t lipoic-bot . --no-cache
 # run
 docker run -e DISCORD_TOKEN={your token} -d lipoic-bot
