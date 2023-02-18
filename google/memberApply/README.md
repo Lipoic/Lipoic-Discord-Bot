@@ -9,3 +9,9 @@ npm install @google/clasp -g
 ```sh
 clasp login
 ```
+
+## push
+
+```sh
+clasp push
+```
