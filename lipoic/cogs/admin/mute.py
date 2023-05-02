@@ -19,14 +19,15 @@ class MuteCog(BaseCog):
         self,
         ctx: ApplicationContext,
         member: Option(discord.Member, "輸入要禁言的成員(預設時間5分鐘)"),
-        reason: Option(str, "Reason", default="無原因"),
         duration: Option(
-            str, "持續時間(和until衝突)，格式: [數字][d/m/h/s]...，例子: 1d5h10m, 30m", default="5m"
+            str, "持續時間(和until衝突)，格式: [數字][d/m/h/s]...，例子: 1d5h10m, 30m", required=False
         ),
         until: Option(
             str,
             "直到某個時間點(和duration衝突)，格式: yyyy-mm-dd hh:mm:ss，例子: 2022-04-01 15:30:20, 03-04 20:00",  # noqa
+            required=False,
         ),
+        reason: Option(str, "Reason", default="無原因"),
     ):
         if duration and until:
             return await ctx.respond(
@@ -49,7 +50,7 @@ class MuteCog(BaseCog):
                     delta += datetime.timedelta(minutes=num)
                 elif unit == "s":
                     delta += datetime.timedelta(seconds=num)
-        else:
+        elif until:
             now = datetime.datetime.now()
 
             date, time = until.split(" ")
@@ -64,8 +65,10 @@ class MuteCog(BaseCog):
             hour, minute, second = map(int, time.split(":"))
 
             delta = datetime.datetime(year, month, day, hour, minute, second) - now
+        else:
+            delta = datetime.timedelta(minutes=5)
 
-        member.timeout_for(delta, reason=reason)
+        await member.timeout_for(delta, reason=reason)
         embed = discord.Embed(title="禁言成功!", description=f"原因: {reason}\n時間: {delta}")
         await ctx.respond(embed=embed, ephemeral=True)
 
