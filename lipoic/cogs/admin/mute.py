@@ -52,17 +52,37 @@ class MuteCog(BaseCog):
                     delta += datetime.timedelta(seconds=num)
         elif until:
             now = datetime.datetime.now()
-
-            date, time = until.split(" ")
             year = now.year
             month = now.month
             day = now.day
-            year, month, day = map(int, date.split("-"))
+
+            untils = until.split(" ")
+            if len(untils) == 1:
+                time = untils[0]
+            else:
+                date = untils[0]
+                time = untils[1]
+
+            dates = date.split("-")
+            dates_len = len(dates)
+            if dates_len == 3:
+                year, month, day = map(int, dates)
+            elif dates_len == 2:
+                month, day = map(int, dates)
+            else:
+                day = map(int, dates)
 
             hour = 0
             minute = 0
             second = 0
-            hour, minute, second = map(int, time.split(":"))
+            times = time.split(":")
+            times_len = len(times)
+            if times_len == 3:
+                hour, minute, second = map(int, times)
+            elif times_len == 2:
+                minute, second = map(int, times)
+            else:
+                second = map(int, times)
 
             delta = datetime.datetime(year, month, day, hour, minute, second) - now
         else:
