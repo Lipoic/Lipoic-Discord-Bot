@@ -20,11 +20,11 @@ class MuteCog(BaseCog):
         ctx: ApplicationContext,
         member: Option(discord.Member, "輸入要禁言的成員(預設時間5分鐘)"),
         duration: Option(
-            str, "持續時間(和until衝突)，格式: [數字][d/m/h/s]...，例子: 1d5h10m, 30m", required=False
+            str, "持續時間(和until衝突)，格式: 天d時h分m秒s，例子: 1d5h10m, 30m", required=False
         ),
         until: Option(
             str,
-            "直到某個時間點(和duration衝突)，格式: yyyy-mm-dd hh:mm:ss，例子: 2022-04-01 15:30:20, 03-04 20:00",  # noqa
+            "直到某個時間點(和duration衝突)，格式: 年-月-日 時:分:秒，例子: 2022-04-01 15:30:20, 03-04 20:00",  # noqa
             required=False,
         ),
         reason: Option(str, "Reason", default="無原因"),
