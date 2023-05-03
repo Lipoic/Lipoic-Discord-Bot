@@ -57,32 +57,32 @@ class MuteCog(BaseCog):
             day = now.day
 
             untils = until.split(" ")
-            if len(untils) == 1:
-                time = untils[0]
-            else:
+            if len(untils) == 2:
                 date = untils[0]
                 time = untils[1]
-
-            dates = date.split("-")
-            dates_len = len(dates)
-            if dates_len == 3:
-                year, month, day = map(int, dates)
-            elif dates_len == 2:
-                month, day = map(int, dates)
+                dates = date.split("-")
+                dates_len = len(dates)
+                if dates_len == 3:
+                    year, month, day = map(int, dates)
+                elif dates_len == 2:
+                    month, day = map(int, dates)
+                else:
+                    day = map(int, dates)
+            elif len(untils) == 1:
+                time = untils[0]
             else:
-                day = map(int, dates)
+                raise Exception("未知的時間格式")
 
             hour = 0
             minute = 0
             second = 0
             times = time.split(":")
-            times_len = len(times)
-            if times_len == 3:
+            if len(times) == 3:
                 hour, minute, second = map(int, times)
-            elif times_len == 2:
-                minute, second = map(int, times)
+            elif len(times) == 2:
+                hour, minute = map(int, times)
             else:
-                second = map(int, times)
+                raise Exception("未知的時間格式")
 
             delta = datetime.datetime(year, month, day, hour, minute, second) - now
         else:
