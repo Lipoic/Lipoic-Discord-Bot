@@ -68,11 +68,12 @@ class MuteCog(BaseCog):
             year = now.year
             month = now.month
             day = now.day
-
+            # 切分日期和時間
             untils = until.split(" ")
             if len(untils) == 2:
                 date = untils[0]
                 time = untils[1]
+                # 切分年月日
                 dates = date.split("-")
                 dates_len = len(dates)
                 if dates_len == 3:
@@ -94,6 +95,7 @@ class MuteCog(BaseCog):
             hour = 0
             minute = 0
             second = 0
+            # 切分時分秒
             times = time.split(":")
             if len(times) == 3:
                 hour, minute, second = map(int, times)
@@ -115,7 +117,7 @@ class MuteCog(BaseCog):
             if delta.total_seconds() <= 0:
                 return await ctx.respond(
                     embed=discord.Embed(
-                        title="禁言失敗!", description="結束時間能在過去!", color=0xE74C3C
+                        title="禁言失敗!", description="結束時間不能在過去!", color=0xE74C3C
                     ),
                     ephemeral=True,
                 )
@@ -123,7 +125,7 @@ class MuteCog(BaseCog):
             delta = datetime.timedelta(minutes=5)
 
         days = delta.days
-        if delta.total_seconds() > 2332800:  # 若禁言時間超過27天
+        if delta.total_seconds() > 2332800:  # 若禁言時間超過27天(2,332,800秒)
             return await ctx.respond(
                 embed=discord.Embed(
                     title="禁言失敗!", description="若禁言時間不能超過27天!", color=0xE74C3C
