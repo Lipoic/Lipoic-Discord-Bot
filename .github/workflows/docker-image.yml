@@ -48,4 +48,14 @@ jobs:
           file: ./Dockerfile.arm64
           platforms: linux/arm64
           push: true
+          continue-on-error: true
+          tags: ghcr.io/lipoic/lipoic-discord-bot:latest
+
+      - uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: ./Dockerfile
+          platforms: linux/386,windows/amd64,linux/amd64,linux/ppc64le,linux/s390x,linux/arm64
+          push: true
+          continue-on-error: true
           tags: ghcr.io/lipoic/lipoic-discord-bot:latest
