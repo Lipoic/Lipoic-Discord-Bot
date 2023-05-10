@@ -1,35 +1,36 @@
 import datetime
 import re
-from typing import List, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 import discord
 from discord.ext import commands
 from discord import ApplicationContext, Option
 
 from lipoic import BaseCog
-from lipoic.core.bot import LIPOIC
 
 if TYPE_CHECKING:
     from core import LIPOIC
 
 
 class MuteCog(BaseCog):
-    def __init__(self, bot: LIPOIC) -> None:
+    def __init__(self, bot: "LIPOIC") -> None:
         super().__init__(bot)
+        self.duration_regex = re.compile(r"(\d+)([dhms]*)")
+        self.duration_maps = {"d": "days", "h": "hours", "m": "minutes", "s": "seconds"}
         self.tz = datetime.timezone(datetime.timedelta(hours=+8))
 
     @commands.has_permissions(moderate_members=True)
-    @discord.slash_command(description="Mute Member", guild_only=True)
+    @discord.slash_command(description="禁言成員(預設時間5分鐘)", guild_only=True)
     async def mute(
         self,
         ctx: ApplicationContext,
-        member: Option(discord.Member, "輸入要禁言的成員(預設時間5分鐘)"),
+        member: Option(discord.Member, "輸入要禁言的成員"),
         duration: Option(
             str, "持續時間(和until衝突)，格式: 天d時h分m秒s，例子: 1d5h10m, 30m", required=False
         ),
         until: Option(
             str,
-            "直到某個時間點(和duration衝突，以台灣時區為主)，格式: 年-月-日 時:分:秒(24小時制)，例子: 2022-04-01 15:30:20, 03-04 20:00",  # noqa
+            "直到某個時間點(和duration衝突，以UTF+8時區為主)，格式: 年-月-日 時:分:秒(24小時制)，例子: 2022-04-01 15:30:20, 03-04 20:00",  # noqa
             required=False,
         ),
         reason: Option(str, "Reason", default="無原因"),
@@ -43,26 +44,11 @@ class MuteCog(BaseCog):
             )
 
         if duration:
-            match = re.findall(r"(\d+)([a-z]*)", duration)
+            match = re.findall(self.duration_regex, duration)
             delta = datetime.timedelta()
             for num, unit in match:
-                num = int(num)
-                if unit == "d":
-                    delta += datetime.timedelta(days=num)
-                elif unit == "h":
-                    delta += datetime.timedelta(hours=num)
-                elif unit == "m":
-                    delta += datetime.timedelta(minutes=num)
-                elif unit == "s":
-                    delta += datetime.timedelta(seconds=num)
+                delta += datetime.timedelta(**{self.duration_maps[unit]: int(num)})
 
-            if delta.total_seconds() <= 0:
-                return await ctx.respond(
-                    embed=discord.Embed(
-                        title="禁言失敗!", description="持續時間不能是負數!", color=0xE74C3C
-                    ),
-                    ephemeral=True,
-                )
         elif until:
             now = datetime.datetime.now(self.tz)
             year = now.year
@@ -92,9 +78,7 @@ class MuteCog(BaseCog):
                     ephemeral=True,
                 )
 
-            hour = 0
-            minute = 0
-            second = 0
+            hour = minute = second = 0
             # 切分時分秒
             times = time.split(":")
             if len(times) == 3:
@@ -124,7 +108,6 @@ class MuteCog(BaseCog):
         else:
             delta = datetime.timedelta(minutes=5)
 
-        days = delta.days
         if delta.total_seconds() > 2332800:  # 若禁言時間超過27天(2,332,800秒)
             return await ctx.respond(
                 embed=discord.Embed(
@@ -132,6 +115,8 @@ class MuteCog(BaseCog):
                 ),
                 ephemeral=True,
             )
+
+        days = delta.days
         hours, r = divmod(delta.seconds, 3600)
         minutes, seconds = divmod(r, 60)
 
