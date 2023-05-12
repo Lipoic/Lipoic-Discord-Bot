@@ -46,7 +46,7 @@ jobs:
         with:
           context: .
           file: ./Dockerfile.arm64
-          platforms: linux/arm64
+          platforms: linux/arm64/v8
           push: true
           continue-on-error: true
           tags: ghcr.io/lipoic/lipoic-discord-bot:latest
@@ -55,7 +55,7 @@ jobs:
         with:
           context: .
           file: ./Dockerfile
-          platforms: linux/386,windows/amd64,linux/amd64,linux/ppc64le,linux/s390x,linux/arm64
+          platforms: linux/386,linux/amd64
           push: true
           continue-on-error: true
           tags: ghcr.io/lipoic/lipoic-discord-bot:latest
