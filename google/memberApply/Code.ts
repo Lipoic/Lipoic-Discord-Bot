@@ -15,7 +15,7 @@ export const onFormSubmit = (
     CV: namedValues['您的簡歷 (經歷、作品連結等)']?.shift(),
     reason: namedValues['您為什麼會想要加入 Lipoic ?']?.shift(),
     thoughts: namedValues['您對於 Lipoic 的想法或願景？']?.shift(),
-    job: [namedValues['您想參與的職務']?.shift()],
+    job: namedValues['您想參與的職務 ']?.shift(),
     remark: namedValues['備註']?.shift(),
     time: namedValues['時間戳記']?.shift(),
     ID: range.getRowIndex() - 1,
